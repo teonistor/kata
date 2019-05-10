@@ -1,3 +1,2 @@
-# Kata
-
-Various sets of programming exercises centred around practice for its own sake. Advent of Code is taking the spotlight, but check out other branches too!
+# Items and Stores
+A minimal example encompassing many Spring tropes... after we talked too much about them on Friday 10<sup>th</sup> May
