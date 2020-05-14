@@ -1,4 +1,3 @@
-
 package io.github.teonistor.mpmp;
 
 import lombok.AllArgsConstructor;
