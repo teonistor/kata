@@ -116,15 +116,15 @@ object AdventOfCode {
     val input = "jmp +1\nacc -18\nacc +19\nacc +19\njmp +202\nacc +15\nacc +42\nacc +30\nacc -7\njmp +535\nacc +31\nacc +9\njmp +581\nnop +501\nacc +44\nacc +18\nacc -4\njmp +545\nacc +9\nacc +5\nnop -2\nacc +3\njmp +475\nacc -10\nacc +14\nacc +29\nnop +471\njmp +470\nacc +2\nnop +375\nacc +31\nacc +6\njmp +420\nacc -1\nacc +2\nnop +185\njmp +490\nacc +2\njmp +317\nnop +282\njmp +457\nacc +37\njmp +254\nacc +19\njmp +436\njmp +458\nacc -7\nacc -2\nacc -17\njmp +454\nacc +37\njmp +212\nacc +6\nacc +5\nacc -7\njmp +104\nacc +5\nnop +134\nacc +46\njmp +541\nacc +4\nacc +46\nacc +18\njmp -53\nacc +10\njmp +285\nacc +39\nacc +34\nnop +109\nacc +47\njmp +32\njmp +1\njmp +143\nacc +36\njmp +429\nacc +45\nacc +22\njmp -59\nacc +0\nacc +23\nacc +30\nacc -7\njmp -45\nacc +46\nacc +31\njmp +164\nacc +37\nacc +34\nacc +40\nacc -1\njmp +246\nnop -46\nacc +2\nacc +31\njmp +221\nnop +413\njmp -51\nacc -14\njmp +145\nacc +1\nnop +77\njmp +131\njmp +370\nnop +513\nacc +7\njmp +476\nacc +22\nacc +37\nacc +44\njmp +334\nacc +9\nacc -1\nacc +5\nacc +27\njmp +351\nacc +31\njmp +220\nnop -61\nacc +34\njmp +504\nnop +471\nacc +6\nacc +48\njmp -17\njmp +217\nacc +13\nacc +0\nacc +25\njmp +144\nacc -5\nacc +17\nnop +341\njmp -26\nacc -10\nacc +34\njmp +168\nnop -16\nacc -6\nacc -10\nacc +38\njmp +30\nacc -2\nacc -14\njmp +419\nacc +40\nacc -17\nacc +27\nacc +8\njmp +101\nnop +370\nacc +2\nacc -10\nacc -7\njmp +224\nnop +437\nacc +42\nacc +50\nacc +39\njmp +81\njmp +11\njmp +143\nacc +6\nacc +46\njmp -107\nacc +13\njmp -109\nacc +5\njmp +1\njmp +467\njmp -159\nnop +421\njmp +243\nacc +44\nnop +412\nacc -6\nacc +13\njmp +56\nacc -12\nacc +18\njmp +313\nnop +151\nacc +5\nacc +49\njmp +120\nacc +46\nacc +23\nnop -122\nacc +21\njmp -55\nacc -15\njmp -115\nacc +19\nnop +116\nacc +32\nacc +21\njmp +16\nacc +27\nacc +32\njmp +359\nacc +16\nacc +18\nacc +15\njmp +54\nnop +182\nacc +4\njmp +361\nacc +4\nacc +38\nacc +49\njmp -94\njmp +428\nacc +0\nacc +9\njmp +224\njmp +82\nnop +57\nacc +6\njmp +1\njmp +144\njmp +20\njmp +265\njmp +402\nnop +114\nacc -12\nacc -11\nacc +1\njmp +412\nnop -163\nacc +50\nacc +1\nacc -9\njmp -20\nacc +10\nacc +6\njmp +323\nacc +10\njmp +1\nacc +42\njmp +46\nacc +35\nacc +31\njmp -139\njmp +129\njmp -193\nacc -4\nnop +247\nnop -163\nacc +25\njmp -26\nacc +34\nacc +26\nacc +40\njmp +220\nacc -6\nacc +6\njmp +311\nacc +0\nacc +14\nacc +41\nacc +6\njmp +284\nacc +32\njmp -13\nnop +157\nacc -4\nacc +47\njmp -146\nacc +34\nacc +6\nnop +196\nacc +5\njmp +268\nacc -8\njmp -176\nacc +34\nacc +17\njmp +1\njmp +114\nacc +32\nacc +39\nnop +313\nacc +38\njmp -237\njmp -273\nacc +21\nacc +26\nacc +31\njmp -231\nacc +17\njmp -105\nnop +333\nnop +17\njmp +11\nacc -9\nacc +2\njmp -162\nacc +3\nacc +0\nnop +318\njmp +215\nacc +14\nacc +32\njmp -196\njmp +33\nacc -6\nacc +45\nacc +27\njmp -166\nacc -1\njmp -25\nacc +0\nacc +4\nacc -14\nacc +0\njmp -115\nnop +118\nacc +28\nnop +175\nacc +45\njmp -97\njmp +78\njmp -284\nacc +35\nnop -248\nacc -18\nacc -6\njmp -308\njmp -95\nacc -2\nacc +0\njmp +255\nacc +7\njmp -24\nacc +17\nacc +20\njmp -220\njmp +172\nacc +40\nacc +39\nacc +19\njmp -238\nnop +44\nnop -99\nnop +238\njmp +195\nacc -14\nacc +36\nacc +40\nacc -11\njmp -65\nnop -54\nnop +47\nacc -11\njmp +18\njmp +98\njmp +252\nnop -1\nacc +1\nacc +10\njmp -4\njmp -319\njmp -46\nacc -8\nacc +50\nacc +43\njmp -174\nacc +22\nacc +4\nacc +32\nacc -6\njmp +73\nacc +8\njmp -31\nacc +16\nnop +11\nacc +26\njmp -98\nacc -11\nacc +40\njmp +101\nacc +28\nacc +30\nacc -16\nacc +7\njmp +239\njmp -179\nacc +47\nacc +15\nacc +42\nacc +26\njmp +30\nacc +17\nacc +3\nacc -5\nnop -98\njmp -236\nacc +2\njmp +196\nacc +39\nacc -14\nacc +36\nacc +49\njmp +189\njmp +235\nacc +27\nacc -2\nacc +16\nacc +40\njmp -81\nacc -5\nacc +17\nacc -1\njmp +1\njmp -129\nnop -171\nacc +47\njmp +169\nacc -16\nacc -5\njmp +172\nnop -84\nacc +8\nacc +40\nacc +43\njmp -33\nacc +39\nnop -12\njmp +53\nacc +36\njmp -270\nacc +17\nacc -1\njmp -255\nacc +0\nacc -12\njmp -371\njmp -216\nacc +45\nacc -18\nacc +23\nacc -17\njmp -37\njmp -386\nnop -302\nacc -19\nacc -16\njmp -297\nacc -18\nacc -7\nacc +17\nacc +17\njmp -173\njmp +114\nacc +4\nacc +19\nnop -296\njmp -36\nacc -18\nacc -14\nacc +6\nnop -27\njmp -101\nacc +15\nnop -407\njmp +44\nacc -18\nacc -6\nacc +33\nacc +36\njmp +80\nacc +43\njmp +73\nacc -2\nacc +7\nacc +4\njmp -10\nacc +46\nnop -49\nacc +7\njmp +65\nacc +24\njmp +144\nacc +13\nacc +26\njmp -351\njmp +1\nacc +34\nnop +62\njmp -363\nacc -4\nacc -5\njmp +23\njmp +82\nacc -7\nacc -7\nacc +15\njmp -468\nacc +7\nnop -423\njmp -178\nnop -425\nacc +23\njmp -181\nacc +6\nacc -11\njmp -321\nacc +3\njmp -122\nacc +12\njmp +44\nacc -5\nacc -16\nacc +16\njmp -281\nacc +33\nacc -4\nacc +15\njmp +9\njmp +63\nacc +35\nnop -12\nacc +25\nacc -10\njmp -452\nacc +1\njmp -148\nacc +8\nacc +40\nacc +48\njmp +2\njmp -315\nnop -325\nacc -4\nacc +16\nacc -4\njmp -369\nacc +21\nacc +3\njmp -153\nnop -25\nacc +0\njmp -84\nacc +32\njmp +19\nacc -18\nacc -1\njmp -385\njmp +1\njmp -357\nacc -13\nacc -13\njmp -360\njmp -393\nacc +4\nnop -102\njmp -316\njmp -248\nacc +4\nnop -487\njmp -339\nacc +3\njmp -190\nacc +24\nacc +31\njmp -166\njmp -482\nacc +22\nacc +32\njmp -290\nacc +22\nacc +48\nacc +5\nacc -6\njmp -330\nnop -203\nacc +7\nacc +1\njmp -287\nacc +15\nacc +3\njmp -230\nacc +37\nnop -162\njmp +33\njmp -147\nacc +16\nacc +39\nacc +49\njmp -560\nacc +26\njmp +26\njmp -283\njmp -486\nacc -9\njmp +1\nacc +25\nacc +1\njmp -514\nacc +46\njmp -166\nacc -5\nacc +35\nnop -204\njmp -175\nnop -30\nnop +11\njmp -400\nacc +15\nacc -7\nacc -1\njmp +18\nacc +31\nacc +16\nacc +43\nacc +33\njmp -260\nacc +1\nacc +23\nacc +25\nacc -1\njmp -200\nacc -15\njmp -314\njmp -238\njmp -75\njmp -192\nacc +30\njmp -525\nacc -14\njmp +17\nacc +7\nacc +9\nacc -6\nnop -312\njmp -559\nacc +28\njmp -305\njmp -239\nacc +0\nacc -5\nacc +9\njmp -471\nnop -327\nacc -5\nacc -19\njmp -496\nacc +17\njmp +1\njmp +1\nacc +29\njmp +1"
       .split("\n")
 
+    val accRx = "acc (.+)".r
+    val jmpRx = "jmp (.+)".r
+    val nopRx = "nop .+".r
+
     def loop(acc: Int, index: Int, visited: Set[Int]) {
       if (visited contains index) {
         println(acc)
         return
       }
-
-      val accRx = "acc (.+)".r
-      val jmpRx = "jmp (.+)".r
-      val nopRx = "nop .+".r
 
       input(index) match {
         case accRx(delta) => loop(acc + delta.toInt, index + 1, visited + index)
@@ -139,51 +139,40 @@ object AdventOfCode {
     val input = "jmp +1\nacc -18\nacc +19\nacc +19\njmp +202\nacc +15\nacc +42\nacc +30\nacc -7\njmp +535\nacc +31\nacc +9\njmp +581\nnop +501\nacc +44\nacc +18\nacc -4\njmp +545\nacc +9\nacc +5\nnop -2\nacc +3\njmp +475\nacc -10\nacc +14\nacc +29\nnop +471\njmp +470\nacc +2\nnop +375\nacc +31\nacc +6\njmp +420\nacc -1\nacc +2\nnop +185\njmp +490\nacc +2\njmp +317\nnop +282\njmp +457\nacc +37\njmp +254\nacc +19\njmp +436\njmp +458\nacc -7\nacc -2\nacc -17\njmp +454\nacc +37\njmp +212\nacc +6\nacc +5\nacc -7\njmp +104\nacc +5\nnop +134\nacc +46\njmp +541\nacc +4\nacc +46\nacc +18\njmp -53\nacc +10\njmp +285\nacc +39\nacc +34\nnop +109\nacc +47\njmp +32\njmp +1\njmp +143\nacc +36\njmp +429\nacc +45\nacc +22\njmp -59\nacc +0\nacc +23\nacc +30\nacc -7\njmp -45\nacc +46\nacc +31\njmp +164\nacc +37\nacc +34\nacc +40\nacc -1\njmp +246\nnop -46\nacc +2\nacc +31\njmp +221\nnop +413\njmp -51\nacc -14\njmp +145\nacc +1\nnop +77\njmp +131\njmp +370\nnop +513\nacc +7\njmp +476\nacc +22\nacc +37\nacc +44\njmp +334\nacc +9\nacc -1\nacc +5\nacc +27\njmp +351\nacc +31\njmp +220\nnop -61\nacc +34\njmp +504\nnop +471\nacc +6\nacc +48\njmp -17\njmp +217\nacc +13\nacc +0\nacc +25\njmp +144\nacc -5\nacc +17\nnop +341\njmp -26\nacc -10\nacc +34\njmp +168\nnop -16\nacc -6\nacc -10\nacc +38\njmp +30\nacc -2\nacc -14\njmp +419\nacc +40\nacc -17\nacc +27\nacc +8\njmp +101\nnop +370\nacc +2\nacc -10\nacc -7\njmp +224\nnop +437\nacc +42\nacc +50\nacc +39\njmp +81\njmp +11\njmp +143\nacc +6\nacc +46\njmp -107\nacc +13\njmp -109\nacc +5\njmp +1\njmp +467\njmp -159\nnop +421\njmp +243\nacc +44\nnop +412\nacc -6\nacc +13\njmp +56\nacc -12\nacc +18\njmp +313\nnop +151\nacc +5\nacc +49\njmp +120\nacc +46\nacc +23\nnop -122\nacc +21\njmp -55\nacc -15\njmp -115\nacc +19\nnop +116\nacc +32\nacc +21\njmp +16\nacc +27\nacc +32\njmp +359\nacc +16\nacc +18\nacc +15\njmp +54\nnop +182\nacc +4\njmp +361\nacc +4\nacc +38\nacc +49\njmp -94\njmp +428\nacc +0\nacc +9\njmp +224\njmp +82\nnop +57\nacc +6\njmp +1\njmp +144\njmp +20\njmp +265\njmp +402\nnop +114\nacc -12\nacc -11\nacc +1\njmp +412\nnop -163\nacc +50\nacc +1\nacc -9\njmp -20\nacc +10\nacc +6\njmp +323\nacc +10\njmp +1\nacc +42\njmp +46\nacc +35\nacc +31\njmp -139\njmp +129\njmp -193\nacc -4\nnop +247\nnop -163\nacc +25\njmp -26\nacc +34\nacc +26\nacc +40\njmp +220\nacc -6\nacc +6\njmp +311\nacc +0\nacc +14\nacc +41\nacc +6\njmp +284\nacc +32\njmp -13\nnop +157\nacc -4\nacc +47\njmp -146\nacc +34\nacc +6\nnop +196\nacc +5\njmp +268\nacc -8\njmp -176\nacc +34\nacc +17\njmp +1\njmp +114\nacc +32\nacc +39\nnop +313\nacc +38\njmp -237\njmp -273\nacc +21\nacc +26\nacc +31\njmp -231\nacc +17\njmp -105\nnop +333\nnop +17\njmp +11\nacc -9\nacc +2\njmp -162\nacc +3\nacc +0\nnop +318\njmp +215\nacc +14\nacc +32\njmp -196\njmp +33\nacc -6\nacc +45\nacc +27\njmp -166\nacc -1\njmp -25\nacc +0\nacc +4\nacc -14\nacc +0\njmp -115\nnop +118\nacc +28\nnop +175\nacc +45\njmp -97\njmp +78\njmp -284\nacc +35\nnop -248\nacc -18\nacc -6\njmp -308\njmp -95\nacc -2\nacc +0\njmp +255\nacc +7\njmp -24\nacc +17\nacc +20\njmp -220\njmp +172\nacc +40\nacc +39\nacc +19\njmp -238\nnop +44\nnop -99\nnop +238\njmp +195\nacc -14\nacc +36\nacc +40\nacc -11\njmp -65\nnop -54\nnop +47\nacc -11\njmp +18\njmp +98\njmp +252\nnop -1\nacc +1\nacc +10\njmp -4\njmp -319\njmp -46\nacc -8\nacc +50\nacc +43\njmp -174\nacc +22\nacc +4\nacc +32\nacc -6\njmp +73\nacc +8\njmp -31\nacc +16\nnop +11\nacc +26\njmp -98\nacc -11\nacc +40\njmp +101\nacc +28\nacc +30\nacc -16\nacc +7\njmp +239\njmp -179\nacc +47\nacc +15\nacc +42\nacc +26\njmp +30\nacc +17\nacc +3\nacc -5\nnop -98\njmp -236\nacc +2\njmp +196\nacc +39\nacc -14\nacc +36\nacc +49\njmp +189\njmp +235\nacc +27\nacc -2\nacc +16\nacc +40\njmp -81\nacc -5\nacc +17\nacc -1\njmp +1\njmp -129\nnop -171\nacc +47\njmp +169\nacc -16\nacc -5\njmp +172\nnop -84\nacc +8\nacc +40\nacc +43\njmp -33\nacc +39\nnop -12\njmp +53\nacc +36\njmp -270\nacc +17\nacc -1\njmp -255\nacc +0\nacc -12\njmp -371\njmp -216\nacc +45\nacc -18\nacc +23\nacc -17\njmp -37\njmp -386\nnop -302\nacc -19\nacc -16\njmp -297\nacc -18\nacc -7\nacc +17\nacc +17\njmp -173\njmp +114\nacc +4\nacc +19\nnop -296\njmp -36\nacc -18\nacc -14\nacc +6\nnop -27\njmp -101\nacc +15\nnop -407\njmp +44\nacc -18\nacc -6\nacc +33\nacc +36\njmp +80\nacc +43\njmp +73\nacc -2\nacc +7\nacc +4\njmp -10\nacc +46\nnop -49\nacc +7\njmp +65\nacc +24\njmp +144\nacc +13\nacc +26\njmp -351\njmp +1\nacc +34\nnop +62\njmp -363\nacc -4\nacc -5\njmp +23\njmp +82\nacc -7\nacc -7\nacc +15\njmp -468\nacc +7\nnop -423\njmp -178\nnop -425\nacc +23\njmp -181\nacc +6\nacc -11\njmp -321\nacc +3\njmp -122\nacc +12\njmp +44\nacc -5\nacc -16\nacc +16\njmp -281\nacc +33\nacc -4\nacc +15\njmp +9\njmp +63\nacc +35\nnop -12\nacc +25\nacc -10\njmp -452\nacc +1\njmp -148\nacc +8\nacc +40\nacc +48\njmp +2\njmp -315\nnop -325\nacc -4\nacc +16\nacc -4\njmp -369\nacc +21\nacc +3\njmp -153\nnop -25\nacc +0\njmp -84\nacc +32\njmp +19\nacc -18\nacc -1\njmp -385\njmp +1\njmp -357\nacc -13\nacc -13\njmp -360\njmp -393\nacc +4\nnop -102\njmp -316\njmp -248\nacc +4\nnop -487\njmp -339\nacc +3\njmp -190\nacc +24\nacc +31\njmp -166\njmp -482\nacc +22\nacc +32\njmp -290\nacc +22\nacc +48\nacc +5\nacc -6\njmp -330\nnop -203\nacc +7\nacc +1\njmp -287\nacc +15\nacc +3\njmp -230\nacc +37\nnop -162\njmp +33\njmp -147\nacc +16\nacc +39\nacc +49\njmp -560\nacc +26\njmp +26\njmp -283\njmp -486\nacc -9\njmp +1\nacc +25\nacc +1\njmp -514\nacc +46\njmp -166\nacc -5\nacc +35\nnop -204\njmp -175\nnop -30\nnop +11\njmp -400\nacc +15\nacc -7\nacc -1\njmp +18\nacc +31\nacc +16\nacc +43\nacc +33\njmp -260\nacc +1\nacc +23\nacc +25\nacc -1\njmp -200\nacc -15\njmp -314\njmp -238\njmp -75\njmp -192\nacc +30\njmp -525\nacc -14\njmp +17\nacc +7\nacc +9\nacc -6\nnop -312\njmp -559\nacc +28\njmp -305\njmp -239\nacc +0\nacc -5\nacc +9\njmp -471\nnop -327\nacc -5\nacc -19\njmp -496\nacc +17\njmp +1\njmp +1\nacc +29\njmp +1"
       .split("\n")
 
-    def loopAcc(acc: Int, index: Int, visited: Set[Int], delta: String, flipped: Boolean) = {
+    val accRx = "acc (.+)".r
+    val jmpRx = "jmp (.+)".r
+    val nopRx = "nop (.+)".r
+
+    def loopAcc(acc: Int, index: Int, visited: Set[Int], delta: String, flipped: Int) = {
       loop(acc + delta.toInt, index + 1, visited + index, flipped)
     }
 
-    def loopJmp(acc: Int, index: Int, visited: Set[Int], delta: String, flipped: Boolean) = {
+    def loopJmp(acc: Int, index: Int, visited: Set[Int], delta: String, flipped: Int) = {
       loop(acc, index + delta.toInt, visited + index, flipped)
     }
 
-    def loopNop(acc: Int, index: Int, visited: Set[Int], flipped: Boolean) = {
+    def loopNop(acc: Int, index: Int, visited: Set[Int], flipped: Int) = {
       loop(acc, index + 1, visited + index, flipped)
     }
 
-    def loop(acc: Int, index: Int, visited: Set[Int], flipped: Boolean): Boolean = {
+    def loop(acc: Int, index: Int, visited: Set[Int], flipped: Int): Boolean = {
       if (index == input.length) {
         println(acc)
         return true
       }
       if (visited contains index) {
-        println((index, flipped, new Exception().getStackTrace.length))
         return false
       }
 
-      val accRx = "acc (.+)".r
-      val jmpRx = "jmp (.+)".r
-      val nopRx = "nop (.+)".r
-
       input(index) match {
         case accRx(delta) => loopAcc(acc, index, visited, delta, flipped)
-        case jmpRx(delta) => {
-          if (!flipped && loopJmp(acc, index, visited, delta, false)) {
-            return true
-          } else {
-            return loopNop(acc, index, visited, true)
-          }
-        }
-        case nopRx(delta) => {
-          if (!flipped && loopNop(acc, index, visited, false)) {
-            return true
-          } else {
-            return loopJmp(acc, index, visited, delta, true)
-          }
-        }
+        case nopRx(delta) => -1 == flipped && loopJmp(acc, index, visited, delta, index) ||
+          (if (flipped == index) loopJmp(acc, index, visited, delta, index) else loopNop(acc, index, visited, flipped))
+        case jmpRx(delta) => -1 == flipped && loopNop(acc, index, visited, index) ||
+          (if (flipped == index) loopNop(acc, index, visited, index) else loopJmp(acc, index, visited, delta, flipped))
       }
     }
-    loop(0, 0, Set.empty, false)
+    loop(0, 0, Set.empty, -1)
   }
 
 
