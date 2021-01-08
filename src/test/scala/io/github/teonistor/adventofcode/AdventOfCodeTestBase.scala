@@ -16,7 +16,11 @@ abstract class AdventOfCodeTestBase extends AnyFunSuite {
   }
 
   def testAndRun[O](day: Int, solutionOne: String => O, solutionTwo: String => O, exampleInput: String, exampleOutputOne: O, exampleOutputTwo: O, problemInput: String) {
-    testAndRun(day, 1, solutionOne, exampleInput, exampleOutputOne, problemInput)
-    testAndRun(day, 2, solutionTwo, exampleInput, exampleOutputTwo, problemInput)
+    testAndRun(day, solutionOne, solutionTwo, exampleInput, exampleOutputOne, exampleInput, exampleOutputTwo, problemInput)
+  }
+
+  def testAndRun[O](day: Int, solutionOne: String => O, solutionTwo: String => O, exampleInputOne: String, exampleOutputOne: O, exampleInputTwo: String, exampleOutputTwo: O, problemInput: String) {
+    testAndRun(day, 1, solutionOne, exampleInputOne, exampleOutputOne, problemInput)
+    testAndRun(day, 2, solutionTwo, exampleInputTwo, exampleOutputTwo, problemInput)
   }
 }
