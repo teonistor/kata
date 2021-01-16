@@ -1,6 +1,7 @@
 package io.github.teonistor.adventofcode
 
 import scala.collection.LinearSeq
+import scala.collection.immutable.Queue
 import scala.util.matching.Regex.Match
 
 object _18 {
@@ -96,8 +97,47 @@ object _18 {
     result
   }
 
+//  private def solveAnotherWay(present: Queue[(Int, String)]):Long= {
+//    present match {
+//      case Queue(val1)=>val1._2.toLong
+//      case Queue(val1, op, val2)=>computeIf(val1._2.toLong, op._2(0), val2._2.toLong)
+//      case Queue(val1, op1, val2, op2, val3, rest*)=>
+//        val (newVal1, newOp, newVal2) = computeIf(val1._2.toLong, op1._2(0), val2._2.toLong, op2._2(0), val3._2.toLong)
+//        rest
+//
+//    }
+//  }
+
+  private def solveAnotherWay(present: Queue[(Int, String)]):Long= {
+    present.size match {
+      case 1 => present.head._2.toLong
+      case 3 => computeIf(present.head._2.toLong, present.tail.head._2(0), present.tail.tail.head._2.toLong)
+//      case 5 => computeIf(present.head._2.toLong, present.tail.head._2(0), present.tail.tail.head._2.toLong, present.tail.tail.tail.head._2(0), present.tail.tail.tail.tail.head._2.toLong)
+      case x:Int if x>4 =>
+        val (newVal1, newOp, newVal2) = computeIf(present.head._2.toLong, present.tail.head._2(0), present.drop(2).head._2.toLong, present.drop(3).head._2(0), present.drop(4).head._2.toLong)
+        // TODO Get rid of these conversions
+        solveAnotherWay(present.drop(5).prepended((1, newVal2.toString)).prepended((2, newOp.toString)).prepended((1, newVal1.toString)))
+    }
+  }
+
+  private def makeQueue(past: Queue[(Int, String)], next: LinearSeq[Match]): (Long, LinearSeq[Match]) =
+    if (next.isEmpty)
+      (solveAnotherWay(past), next)
+    else {
+      val w = tokenise(next.head)
+      w match {
+        case (3, _) => val (parenVal, remainingNext) = newBeginning(next.tail)
+          makeQueue(past.appended((1, parenVal.toString)), remainingNext)
+        case (4, _) => (solveAnotherWay(past), next.tail)
+        case other => makeQueue(past.appended(other), next.tail)
+      }
+    }
+
+  private def newBeginning(next: LinearSeq[Match])=
+    makeQueue(Queue.empty, next)
+
   private def parseLine5(line: String) = {
-    val dbg = parseLineLaunch5(lex.findAllMatchIn(line).to(List))
+    val dbg = newBeginning(lex.findAllMatchIn(line).to(List))
     println(s"$line = $dbg")
     dbg._1
   }
