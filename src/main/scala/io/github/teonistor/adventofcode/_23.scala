@@ -2,7 +2,7 @@ package io.github.teonistor.adventofcode
 
 object _23 {
 
-  def move(circle: List[Char]): List[Char] = {
+  def move(circle: List[Int]): List[Int] = {
     val current = circle.head
     val take1 = circle(1)
     val take2 = circle(2)
@@ -17,19 +17,27 @@ object _23 {
       .concat(tail.drop(destinationIndex)).appended(current).to(List)
   }
 
-  def _1(input: String): String = {
-    // TODO var
-    var circle = input.toList
-
-    for (_ <- 1 to 100) {
-      circle = move(circle)
-    }
-
-    val index = circle.indexOf('1')
-    circle.drop(index + 1).mkString + circle.take(index).mkString
+  def moveRec(circle: List[Int], movesLeft: Int): List[Int] =
+    if (movesLeft == 0) circle
+    else {
+      if (movesLeft % 1000 == 0) println(s"$movesLeft moves left")
+      moveRec(move(circle), movesLeft - 1)
   }
 
-  def _2(input: String): String = {
-    "0"
+  def _1(input: String): String = {
+    val circle = input.toList.map(_.toString.toInt)
+    val endCircle = moveRec(circle, 100)
+
+    val index = endCircle.indexOf(1)
+    endCircle.drop(index + 1).mkString + endCircle.take(index).mkString
+  }
+
+  def _2(input: String): Long = {
+    val circle = input.toList.map(_.toString.toInt).concat(10 to 1000000)
+    val endCircle = moveRec(circle, 10000000)
+
+    val index = endCircle.indexOf('1')
+    val rotatedCircle = endCircle.drop(index + 1).concat(endCircle.take(index))
+    rotatedCircle.head.toLong * rotatedCircle(1).toLong
   }
 }
