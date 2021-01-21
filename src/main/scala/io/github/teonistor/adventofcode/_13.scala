@@ -10,7 +10,6 @@ object _13 {
     (busTime - myTime) * bus
   }
 
-  // TODO It doesn't work for the example input anymore
   def _2(input: String): Long = {
     val buses = input.split('\n')(1).split(',').map(_.toIntOption)
     val req = buses.indices.filter(buses(_).isDefined).map(i => (i, buses(i).get))
@@ -23,66 +22,22 @@ object _13 {
       else index
     }
 
-    // This cheats by noticing that (in the problem data) the numbers that would fall on the same spot are primes, thus their least
-    // common multiple is their product. It gives the most optimised requirement set:
+    // This cheats by noticing that in the given inputs the numbers that would fall on the same spot are primes, thus their least
+    // common multiple is their product. It gives the most optimised requirement set which for the problem data is:
     // (0 -> 15894127, 10 -> 41, -31 -> 541, -5 -> 13, 3 -> 17, -2 -> 29)
     val optimisedReq = req.groupMapReduce(indexAndValue => bringCloser(indexAndValue._1, indexAndValue._2) - indexOfMax)(_._2)(_*_)
 
     // Before I realised I could use the maximum of the optimised values, using max from above the problem data took about 3 hours
-    val optimisedMax = optimisedReq.values.max
-    println(s"optimisedMax: ${optimisedMax}")
+    val (indexOfOptimisedMax, optimisedMax) = optimisedReq.maxBy(_._2)
+
+    // The necessity for this may seem ridiculous, but without it the example input breaks because the product of two non-max values is
+    // greater than the max value. That's not the case with the problem data where the max value stays put after bringCloser()
+    val veryOptimisedReq = optimisedReq.map(indexAndValue => (indexAndValue._1 - indexOfOptimisedMax, indexAndValue._2))
 
     def findStart(t: Long): Long = {
-//      if (t % 20662365100L == 0) println(s"$t ")
-      if (optimisedReq.forall(indexAndValue => (t + indexAndValue._1) % indexAndValue._2 == 0)) t
+      if (veryOptimisedReq.forall(indexAndValue => (t + indexAndValue._1) % indexAndValue._2 == 0)) t
       else findStart(t + optimisedMax)
     }
-    findStart(optimisedMax) - indexOfMax
-
-
-// Attempt 2.1 was better than attempt 2 by being multithreaded in this brutal way; much better suited to a ForkJoin pool or something
-// It also had a *4 in the recursive step
-//
-//  var ans: Long = 0
-//
-//    new Thread(() => {
-//      ans = findStart(582784646070582L)
-//    }).start()
-//    new Thread(() => {
-//      ans = findStart(582784646070582L + optimisedMax)
-//    }).start()
-//    new Thread(() => {
-//      ans = findStart(582784646070582L + optimisedMax * 2)
-//    }).start()
-//    new Thread(() => {
-//      ans = findStart(582784646070582L + optimisedMax * 3)
-//    }).start()
-//
-//    while (ans == 0) {
-//      Thread.sleep(1000)
-//    }
-//
-//    ans - indexOfMax
-
-
-////////  Below this line is the original idea, very nice but would take 190 years to complete on the problem data set  ////////
-
-// Can't use int range here because there are more than Int.MaxValue elements
-
-//    def findStart(t: Long): Long = {
-//            println(s"$t ")
-//      if (buses.indices.count(i => buses(i).forall((t + i) % _ == 0)) == buses.length) t
-//      else findStart(t + 1)
-//    }
-
-    // Cautiously working around the Int.MaxValue size limit
-//    findStart(1L)
-//
-//4630083
-//    val value = LazyList.iterate(1L)(_ + 1L)
-//    value.find(t => {
-//      println(s"$t ")
-//      buses.indices.count(i => buses(i).forall((t + i) % _ == 0)) == buses.length
-//    }).get
+    findStart(optimisedMax) - indexOfMax - indexOfOptimisedMax
   }
 }
