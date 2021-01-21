@@ -1,5 +1,7 @@
 package io.github.teonistor.adventofcode
 
+import scala.collection.immutable.Queue
+
 object _07 {
 
   private type Bag = (String, List[(Int, String)])
@@ -23,9 +25,19 @@ object _07 {
     else
       Set.empty
 
-  private def count(color: String, bags: Map[String, List[(Int, String)]]):Int = {
+  private def count(color: String, bags: Map[String, List[(Int, String)]]): Int =
     1 + bags(color).to(LazyList).map(countAndColor => countAndColor._1 * count(countAndColor._2, bags)).sum
-  }
+
+  // This is the tail-recursive version of the above one-liner. Can we write a program-writing program to make the conversion for us?
+  private def tailRecCount(bags: Map[String, List[(Int, String)]], colors: Queue[(Int, String)], accumulator: Int): Int =
+    if (colors.isEmpty)
+      accumulator
+    else {
+      val (count, color) = colors.head
+      tailRecCount(bags,
+        colors.tail.appendedAll(bags(color).to(LazyList).map(countAndColor => (countAndColor._1 * count, countAndColor._2))),
+        accumulator + count)
+    }
 
   def _1(input: String): Int = {
     val bags = input.split('\n').map(parseBag).to(List)
@@ -41,6 +53,6 @@ object _07 {
 
   def _2(input: String): Int = {
     val bags = input.split('\n').map(parseBag).to(List)
-    count("shiny gold", bags.toMap) - 1
+    tailRecCount(bags.toMap, Queue((1, "shiny gold")), 0) - 1
   }
 }
