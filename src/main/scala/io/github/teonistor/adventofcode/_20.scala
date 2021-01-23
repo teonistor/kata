@@ -6,47 +6,79 @@ object _20 {
 
   private val tileRx = "Tile (\\d+):\n([\\s\\S]+)".r
 
-//  private type Tile = (Int, (Int, Int, Int, Int), (Int, Int, Int, Int))
-  private type Tile = (Int, List[Int], List[Int])
+  // top, bottom, left, right
+  private type Arrangement = (Int, Int, Int, Int)
+
+  // tile id & 8 arrangements for flips/rotations
+  private type Tile = (Int, List[Arrangement])
+
+  private var b=true
 
   private def parseTile(s: String): Tile = {
-    s match {
+    val tuple = s match {
       case tileRx(id, board) =>
-        val boardLines = board.split('\n')
-        val edges = List(boardLines(0), boardLines.last, boardLines.map(_ (0)).mkString, boardLines.map(_.last).mkString)
-        val direct = edges.map(_.replace('#', '0').replace('.', '1')).map(parseInt(_, 2))
-        val revers = edges.map(_.replace('#', '0').replace('.', '1').reverse).map(parseInt(_, 2))
-        (id.toInt, direct, revers)
+        val boardLines = board.split('\n').to(LazyList).map(_.replace('#', '0').replace('.', '1'))
+
+        val top = boardLines.head
+        val bottom = boardLines.last
+        val left = boardLines.map(_ (0)).mkString
+        val right = boardLines.map(_.last).mkString
+
+        // I "calculated" the 8 orientations by literally turning a scrap of paper with arrows on it on a bigger paper with bigger arrows on it
+        val orientationsStr = LazyList(
+          (top, bottom, left, right),
+          (left.reverse, right.reverse, bottom, top),
+          (bottom.reverse, top.reverse, right.reverse, left.reverse),
+          (right, left, top.reverse, bottom.reverse),
+          (top.reverse, bottom.reverse, right, left),
+          (right.reverse, left.reverse, bottom.reverse, top.reverse),
+          (bottom, top, left.reverse, right.reverse),
+          (left, right, top, bottom))
+
+     (id.toInt, orientationsStr.map(orientation => (parseInt(orientation._1, 2),parseInt(orientation._2, 2),parseInt(orientation._3, 2),parseInt(orientation._4, 2))).to(List))
+    }
+    if (b) {
+      b=false
+      println(tuple)
+    }
+    tuple
+  }
+
+  def reconstruct(i: Int, j: Int, arng: Int, tiles: Vector[Tile], arrangements: Vector[Vector[Arrangement]], picture: Vector[Vector[Int]]): Vector[Vector[Int]] = {
+    if (i >= picture.size)
+      picture
+    else {
+      println(s"Picture so far: $picture")
+
+
+      tiles.flatMap(tile =>
+
+      tile._2.to(LazyList)
+        // An arrangement matches if to the top and left either there is nothing or the corresponding numbers match
+        .filter(arrangement => (i == 0 || arrangement._1 == arrangements(i - 1)(j)._2) && (j == 0 || arrangement._3 == arrangements(i)(j - 1)._4))
+        .map(arrangement => reconstruct(
+          i + (j + 1) / picture.size,
+          (j + 1) % picture.size,
+          arng,
+          tiles.filter(tile != _),
+          arrangements.updated(i, arrangements(i).updated(j, arrangement)),
+          picture.updated(i, picture(i).updated(j, tile._1)))))
+        .find(_ != null).orNull
     }
   }
 
   def _1(input: String): Long = {
-    val tiles = input.split("\n\n").to(LazyList).map(parseTile)
+    val tiles = input.split("\n\n").to(Vector).map(parseTile)
     val sideLen = math.sqrt(tiles.size).toInt
 
     if (sideLen * sideLen != tiles.size)
       throw new RuntimeException("Precondition failure: non-square number of tiles " + tiles.size)
 
-    val tileCountPow = 1 << tiles.size
-    val tileConnections = (0 until tileCountPow).map(tileFlipMap => {
-      val activeTiles = tiles.indices.map(index => {
-        val tile = tiles(index)
-        if ((tileFlipMap & (1 << index)) == 0) (tile._1, tile._2)
-        else (tile._1, tile._3)
-      })
-        .toMap
+    val picture = reconstruct(0, 0, 0, tiles, Vector.fill[Arrangement](sideLen, sideLen)(null), Vector.fill(sideLen, sideLen)(0))
 
-      activeTiles.map(tile => (tile._1,
-        tile._2.count(activeTiles.removed(tile._1).values.to(LazyList).flatten.contains)))
-    })
+    println("Picture: " + picture)
 
-    println("Sizes: " + tileConnections.map(_.groupMapReduce(_._2)(_=>1)(_+_)))
-
-    val chosenOnes = tileConnections.filter(conn => conn.count(_._2 == 2) == 4 && conn.count(_._2 == 3) == sideLen * 4 - 8 && conn.count(_._2 == 4) == (sideLen - 2) * (sideLen - 2))
-    println(s"Chosen: $chosenOnes")
-
-//    chosenOnes.head.keys.product
-    1951L * 3079L * 2971L * 1171L
+    picture(0)(0).toLong * picture(0).last * picture.last(0) * picture.last.last
   }
 
   def _2(input: String): Long = {
