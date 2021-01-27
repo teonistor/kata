@@ -41,14 +41,9 @@ object _07 {
 
   def _1(input: String): Int = {
     val bags = input.split('\n').map(parseBag).to(List)
-
     val outerByInner = bags.to(Set).flatMap(bag => bag._2.map(subSpec => (subSpec._2, bag._1))).groupMap(_._1)(_._2)
-    println(outerByInner.keySet)
-    println(outerByInner)
 
     lookFor("shiny gold", outerByInner).size
-
-
   }
 
   def _2(input: String): Int = {
