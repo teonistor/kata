@@ -4,14 +4,20 @@ import org.scalatest.funsuite.AnyFunSuite
 
 abstract class AdventOfCodeTestBase extends AnyFunSuite {
 
+  def runOne[O](name: String, kind: String, solution: => O): O = {
+    val startTime = System.currentTimeMillis()
+    val actual = solution
+    val endTime = System.currentTimeMillis()
+    printf("%s - %s [%6dms]: %s%n", name, kind, endTime - startTime, actual)
+    actual
+  }
+
   def testAndRun[O](day: Int, part: Int, solution: String => O, exampleInput: String, exampleOutput: O, problemInput: String) {
     val name = "Day %02d part %d".format(day, part)
     test(name) {
 
-      val actualOutput = solution(exampleInput)
-      printf("%s - example result: %s%n", name, actualOutput)
-      assert(actualOutput.equals(exampleOutput))
-      printf("%s - problem result: %s%n", name, solution(problemInput))
+      assert(runOne(name, "example", solution(exampleInput)).equals(exampleOutput))
+      runOne(name, "problem", solution(problemInput))
     }
   }
 
