@@ -16,10 +16,9 @@ object _01 {
   }
 
   @tailrec
-  private def recursivelyCount(number: Int, moreNumbers: Seq[Int], counter: Int = 0): Int = {
+  private def recursivelyCount(number: Int, moreNumbers: Seq[Int], counter: Int = 0): Int =
     if (moreNumbers.isEmpty)
       counter
     else
       recursivelyCount(moreNumbers.head, moreNumbers.tail, if (number < moreNumbers.head) counter + 1 else counter)
-  }
 }
