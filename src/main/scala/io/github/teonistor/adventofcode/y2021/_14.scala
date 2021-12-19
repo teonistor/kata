@@ -1,6 +1,5 @@
 package io.github.teonistor.adventofcode.y2021
 
-import scala.annotation.tailrec
 import scala.collection.mutable
 
 object _14 {
@@ -15,31 +14,43 @@ object _14 {
     solve(input, 40)
   }
 
-  private def solve(input: String, steps:Int): Long = {
+  private def solve(input: String, steps: Int): Long = {
     val templateAndRules = input.split("\n\n")
 
     val rules = templateAndRules(1).split("\n").to(LazyList)
-      .map { case insertionRule(k, v) => (k, v)}
+      .map { case insertionRule(k, v) => (k, v(0)) }
       .toMap
+    val memo = mutable.Map.empty[(Char, Char, Int), Map[Char, Long]]
 
-    val finalPolymer = solveRecursively(templateAndRules(0).to(mutable.Queue).map(_.toString), rules, steps)
-    val counts = finalPolymer.groupMapReduce(identity)(_=>1)(_+_).values
+    val end = templateAndRules(0).length - 2
+    val counts = (0 to end).to(LazyList)
+      .map(i => solveAnotherWay(templateAndRules(0)(i), templateAndRules(0)(i+1), steps, rules, memo))
+      .prepended(Map((templateAndRules(0).last, 1L)))
+      .reduce(addMaps[Char])
+      .values
     counts.max - counts.min
   }
 
-  @tailrec
-  private def solveRecursively(polymer: mutable.Queue[String], rules: Map[String,String], steps:Int): String ={
-    println(s"steps remaining: $steps")
-
-    if (steps == 0)
-      polymer.mkString
+  private def solveAnotherWay(left: Char, right: Char, steps: Int, rules: Map[String, Char], memo: mutable.Map[(Char, Char, Int), Map[Char, Long]]): Map[Char, Long] = {
+    if (memo.contains((left, right, steps)))
+      memo((left, right, steps))
 
     else {
-      val end = polymer.size - 2
-      (0 to end).map(_*2)
-        .foreach(i => polymer.insert(i+1, rules(polymer(i) + polymer(i+1))))
+      val result = if (steps < 1)
+        Map((left, 1L))
 
-      solveRecursively(polymer, rules, steps-1)
+      else {
+        val middle = rules("" + left + right)
+        addMaps(
+          solveAnotherWay(left, middle, steps - 1, rules, memo),
+          solveAnotherWay(middle, right, steps - 1, rules, memo))
+      }
+
+      memo.put((left, right, steps), result)
+      result
     }
   }
+
+  private def addMaps[K](left: Map[K, Long], right: Map[K, Long]): Map[K, Long] =
+    LazyList(left, right).flatten.groupMapReduce(_._1)(_._2)(_ + _)
 }
