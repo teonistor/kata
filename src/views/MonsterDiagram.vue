@@ -11,7 +11,7 @@
       <v-slider v-model="n"
                 :min="1"
                 :max="255"
-                label="n" >
+                label="modulus" >
         <template v-slot:append>
           <v-text-field v-model="n"
                         :min="1"
@@ -24,7 +24,7 @@
       <v-slider v-model="m"
                 :min="2"
                 :max="255"
-                label="m" >
+                label="multiplier" >
         <template v-slot:append>
           <v-text-field v-model="m"
                         :min="2"
@@ -33,6 +33,29 @@
                         style="width: 60px"/>
         </template>
       </v-slider>
+    </p>
+
+<!--    <v-row>-->
+<!--      <v-col cols="12" sm="4"></v-col>-->
+<!--      -->
+<!--    </v-row>-->
+    <p>
+      Show segment length in color as:&emsp;&emsp;
+      <v-switch label="RGB" v-model="lengthAsRgb" style="display:inline-block" />&emsp;&emsp;
+      <v-switch label="HSL" v-model="lengthAsHsl" style="display:inline-block" />
+      <br>
+      Show different loops in color as:&emsp;&emsp;
+      <v-switch label="RGB" v-model="loopAsRgb" style="display:inline-block" />&emsp;&emsp;
+      <v-switch label="HSL" v-model="loopAsHsl" style="display:inline-block" />
+
+<!--      <v-radio-group v-model="radioGroup">-->
+<!--        <v-radio-->
+<!--              v-for="n in 3"-->
+<!--              :key="n"-->
+<!--              :label="`Radio ${n}`"-->
+<!--              :value="n"-->
+<!--        ></v-radio>-->
+<!--      </v-radio-group>-->
     </p>
 
     <svg :width="size * 2"
@@ -57,10 +80,13 @@
     props: [],
 
     data: () => ({
+      size: 300,
       n: 9,
       m: 2,
-
-      size: 300
+      lengthAsRgb: false,
+      lengthAsHsl: true,
+      loopAsRgb: false,
+      loopAsHsl: false
     }),
 
     computed: {
@@ -69,7 +95,7 @@
         for (let t = 0; t < this.n; t++) {
           let r = Math.PI * 2 * t / this.n;
           points.push({
-            // Swap trig to start at the top; also SVG coordinates aren't like in math class
+            // Swap trig to place zero at the top; also SVG coordinates aren't like in math class
             x: -Math.sin(r) * this.size,
             y: -Math.cos(r) * this.size
           });
@@ -78,15 +104,42 @@
       },
 
       pairs() {
-        let points = new Set(this.points);
         let pairs = [];
-        // TODO let loops = [];
-
         for (let i = 0; i < this.n; i++) {
           pairs[i] = i * this.m % this.n;
         }
-
         return pairs;
+      },
+
+      loopMins() {
+        // TODO These variable names are very confusing
+        let points = new Set(this.pairs);
+        let loopMins = [];
+
+        while (points.size > 0) {
+          // Why is this so cumbersome? Why JS why
+          let current = points.entries().next().value[0];
+          let min = current;
+          let visited = new Set([current]);
+          points.delete(current);
+          while(!visited.has(this.pairs[current])) {
+            current = this.pairs[current];
+            min = Math.min(min, current);
+            visited.add(current);
+            points.delete(current);
+          }
+          visited.forEach(i => loopMins[i] = min);
+        }
+
+        return loopMins;
+      },
+
+      loopColors() {
+        let distinctLoops = new Set(this.loopMins);
+        let loopColors = [];
+        distinctLoops.forEach((loop, i) =>
+          loopColors[loop] = Math.round(360 * i / distinctLoops.size));
+        return loopColors;
       },
 
       lines() {
@@ -96,7 +149,8 @@
             x2: this.points[to].x,
             y1: this.points[from].y,
             y2: this.points[to].y };
-          line.color = Math.round(this.computeLength(line) * 127.5 / this.size);
+          // line.color = Math.round(this.computeLength(line) * 127.5 / this.size);
+          line.color = this.loopColors[this.loopMins[to]];
           return line;
         });
       }
@@ -109,6 +163,8 @@
         return Math.sqrt(dx * dx + dy * dy);
       }
     },
+
+    watch: {},
 
     mounted () {
 
