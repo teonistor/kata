@@ -22,12 +22,12 @@
       </v-slider>
 
       <v-slider v-model="m"
-                :min="1"
+                :min="2"
                 :max="255"
                 label="m" >
         <template v-slot:append>
           <v-text-field v-model="m"
-                        :min="1"
+                        :min="2"
                         class="mt-0 pt-0"
                         type="number"
                         style="width: 60px"/>
@@ -53,11 +53,10 @@
     props: [],
 
     data: () => ({
-      n:10,
+      n: 9,
       m: 2,
 
-      size: 300,
-      pairs: []
+      size: 300
     }),
 
     computed: {
@@ -66,20 +65,33 @@
         for (let t = 0; t < this.n; t++) {
           let r = Math.PI * 2 * t / this.n;
           points.push({
-            // Deliberately swapping trig to start at the top
-            x: Math.sin(r) * this.size,
-            y: Math.cos(r) * this.size
+            // Swap trig to start at the top; also SVG coordinates aren't like in math class
+            x: -Math.sin(r) * this.size,
+            y: -Math.cos(r) * this.size
           });
         }
         return points;
       },
 
+      pairs() {
+        let points = new Set(this.points);
+        let pairs = [];
+        // TODO let loops = [];
+
+        for (let i = 0; i < this.n; i++) {
+          pairs[i] = i * this.m % this.n;
+        }
+
+        return pairs;
+      },
+
       lines() {
-        let lines = [];
-        this.points.forEach(a =>
-          this.points.forEach(b =>
-            lines.push({x1: a.x, x2: b.x, y1: a.y, y2: b.y})));
-        return lines;
+        return this.pairs.map((to, from) => ({
+          x1: this.points[from].x,
+          x2: this.points[to].x,
+          y1: this.points[from].y,
+          y2: this.points[to].y
+        }));
       }
     },
 
