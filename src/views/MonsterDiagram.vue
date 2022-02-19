@@ -35,12 +35,16 @@
       </v-slider>
     </p>
 
-    <svg :viewBox="'-' + size + ' -' + size + ' ' + size * 2 + ' ' + size * 2" :width="size * 2" :height="size * 2">
+    <svg :width="size * 2"
+         :height="size * 2"
+         :viewBox="'-' + size + ' -' + size + ' ' + size * 2 + ' ' + size * 2" >
       <line v-for="line in lines"
             :x1="line.x1"
             :y1="line.y1"
             :x2="line.x2"
-            :y2="line.y2" style="stroke:rgb(255,25,5);stroke-width:1" />
+            :y2="line.y2"
+            :style="{stroke: 'hsl(' + line.color + ',50%,50%)', 'stroke-width': '1' }" />
+<!--    :style="{stroke: 'rgb(' + line.color + ',50,25)', 'stroke-width': '1' }" />-->
     </svg>
 
   </v-container>
@@ -86,17 +90,24 @@
       },
 
       lines() {
-        return this.pairs.map((to, from) => ({
-          x1: this.points[from].x,
-          x2: this.points[to].x,
-          y1: this.points[from].y,
-          y2: this.points[to].y
-        }));
+        return this.pairs.map((to, from) => {
+          let line = {
+            x1: this.points[from].x,
+            x2: this.points[to].x,
+            y1: this.points[from].y,
+            y2: this.points[to].y };
+          line.color = Math.round(this.computeLength(line) * 127.5 / this.size);
+          return line;
+        });
       }
     },
 
     methods: {
-
+      computeLength(line) {
+        let dx = line.x1 - line.x2;
+        let dy = line.y1 - line.y2;
+        return Math.sqrt(dx * dx + dy * dy);
+      }
     },
 
     mounted () {
