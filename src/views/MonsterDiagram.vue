@@ -3,9 +3,9 @@
   <v-container fluid>
     <h2>The "Monster" Diagram of modular times tables</h2>
     <p>
-<!--      <v-btn href>Source code</v-btn>-->
-      &nbsp;
-<!--      <v-btn href>Source of inspiration</v-btn>-->
+      <v-btn href="https://github.com/teonistor/kata/tree/modular-times-table" target="_blank">Source code</v-btn>
+      &emsp;
+      <v-btn href="https://www.youtube.com/watch?v=6ZrO90AI0c8" target="_blank">Source of inspiration</v-btn>
     </p>
     <p>
       <v-slider v-model="size"
