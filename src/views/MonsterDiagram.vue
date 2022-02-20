@@ -54,7 +54,7 @@
 <!--    </v-row>-->
    <p>
      <v-switch label="Show outer circle" v-model="showCircle" />&emsp;&emsp;
-     <v-switch label="Show arrows" disabled v-model="showArrows" />&emsp;&emsp;
+     <v-switch label="Show arrows" v-model="showArrows" />&emsp;&emsp;
 
    </p>
    
@@ -94,8 +94,9 @@
               :x2="line.x2"
               :y2="line.y2"
               :style="{stroke: color, 'stroke-width': '1' }" />
-<!--        <polygon :points="computeArrow(line)"-->
-<!--                 :style="{fill: color}" />-->
+        <polygon v-if="showArrows"
+                 :points="computeArrow(line)"
+                 :style="{fill: color, stroke: 'none' }" />
       </g>
       <circle v-if="showCircle"
               cx="0" cy="0"
@@ -229,6 +230,23 @@
         let dx = line.x1 - line.x2;
         let dy = line.y1 - line.y2;
         return Math.sqrt(dx * dx + dy * dy);
+      },
+
+      computeArrow(line) {
+        const arrowSizeSq = this.size * this.size / 6400;
+
+        let centreX = (line.x1 + line.x2) / 2;
+        let centreY = (line.y1 + line.y2) / 2;
+
+        let dx = line.x2 - line.x1;
+        let dy = line.y2 - line.y1;
+        let scale = Math.sqrt(arrowSizeSq / (dx * dx + dy * dy));
+        dx *= scale;
+        dy *= scale;
+
+        return (centreX + dx * 2) + ',' + (centreY + dy * 2) + ' '
+             + (centreX + dy)     + ',' + (centreY - dx)     + ' '
+             + (centreX - dy)     + ',' + (centreY + dx);
       }
     },
 
