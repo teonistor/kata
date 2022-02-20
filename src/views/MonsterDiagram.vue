@@ -8,6 +8,19 @@
 <!--      <v-btn href>Source of inspiration</v-btn>-->
     </p>
     <p>
+      <v-slider v-model="size"
+                :min="100"
+                :max="1500"
+                label="Picture size" >
+        <template v-slot:append>
+          <v-text-field v-model="size"
+                        :min="100"
+                        class="mt-0 pt-0"
+                        type="number"
+                        style="width: 60px"/>
+        </template>
+      </v-slider>
+
       <v-slider v-model="n"
                 :min="1"
                 :max="255"
@@ -39,6 +52,12 @@
 <!--      <v-col cols="12" sm="4"></v-col>-->
 <!--      -->
 <!--    </v-row>-->
+   <p>
+     <v-switch label="Show outer circle" v-model="showCircle" />&emsp;&emsp;
+     <v-switch label="Show arrows" disabled v-model="showArrows" />&emsp;&emsp;
+
+   </p>
+   
     <p>
       Show segment length in color as:&emsp;&emsp;
       <v-switch label="Hue" v-model="lengthAsHue" style="display:inline-block" />&emsp;&emsp;
@@ -68,13 +87,21 @@
     <svg :width="size * 2"
          :height="size * 2"
          :viewBox="'-' + size + ' -' + size + ' ' + size * 2 + ' ' + size * 2" >
-      <line v-for="line in lines"
-            :x1="line.x1"
-            :y1="line.y1"
-            :x2="line.x2"
-            :y2="line.y2"
-            :style="{stroke: computeColor(line), 'stroke-width': '1' }" />
-<!--    :style="{stroke: 'rgb(' + line.color + ',50,25)', 'stroke-width': '1' }" />-->
+      <g v-for="line in lines"
+         v-let="color = computeColor(line)">
+        <line :x1="line.x1"
+              :y1="line.y1"
+              :x2="line.x2"
+              :y2="line.y2"
+              :style="{stroke: color, 'stroke-width': '1' }" />
+<!--        <polygon :points="computeArrow(line)"-->
+<!--                 :style="{fill: color}" />-->
+      </g>
+      <circle v-if="showCircle"
+              cx="0" cy="0"
+              stroke="rgb(180,180,180)" fill="none"
+              stroke-width="0.5"
+              :r="size" />
     </svg>
 
   </v-container>
@@ -90,6 +117,10 @@
       size: 300,
       n: 9,
       m: 2,
+      
+      showCircle: true,
+      showArrows: false,
+      
       lengthAsHue: false,
       lengthAsLightness: true,
       lengthAsR: false,
@@ -202,6 +233,9 @@
     },
 
     watch: {
+
+      // The next 10 watches just enforce the rule expressed in one line of human language at the bottom of the color toggles
+
       lengthAsHue(value) {
         if (value) {
           this.loopsAsHue = false;
