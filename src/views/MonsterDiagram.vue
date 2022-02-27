@@ -2,109 +2,120 @@
 <template>
   <v-container fluid>
     <h2>The "Monster" Diagram of modular times tables</h2>
-    <p>
-      <v-btn href="https://github.com/teonistor/kata/tree/modular-times-table" target="_blank">Source code</v-btn>
-      &emsp;
-      <v-btn href="https://www.youtube.com/watch?v=6ZrO90AI0c8" target="_blank">Source of inspiration</v-btn>
-    </p>
-    <p>
-      <v-slider v-model="size"
-                :min="100"
-                :max="1500"
-                label="Picture size" >
-        <template v-slot:append>
-          <v-text-field v-model="size"
-                        :min="100"
-                        class="mt-0 pt-0"
-                        type="number"
-                        style="width: 60px"/>
-        </template>
-      </v-slider>
+    <v-row>
+      <v-col cols="12" lg="4">
+        <!--        <v-expansion-panels>-->
+        <!--          <v-expansion-panel open hover focusable >-->
+        <!--            <v-expansion-panel-header>-->
+        <!--              Optoins-->
+        <!--            </v-expansion-panel-header>-->
+        <!--            <v-expansion-panel-content>-->
+        <p>
+          <v-btn href="https://github.com/teonistor/kata/tree/modular-times-table" target="_blank">Source code</v-btn>
+          &emsp;
+          <v-btn href="https://www.youtube.com/watch?v=6ZrO90AI0c8" target="_blank">Source of inspiration</v-btn>
+        </p>
+        <hr>
 
-      <v-slider v-model="n"
-                :min="1"
-                :max="255"
-                label="modulus" >
-        <template v-slot:append>
-          <v-text-field v-model="n"
-                        :min="1"
-                        class="mt-0 pt-0"
-                        type="number"
-                        style="width: 60px"/>
-        </template>
-      </v-slider>
+        <v-slider v-model="size"
+                  :min="100"
+                  :max="1500"
+                  label="Picture size" >
+          <template v-slot:append>
+            <v-text-field v-model="size"
+                          :min="100"
+                          class="mt-0 pt-0"
+                          type="number"
+                          style="width: 60px"/>
+          </template>
+        </v-slider>
 
-      <v-slider v-model="m"
-                :min="2"
-                :max="255"
-                label="multiplier" >
-        <template v-slot:append>
-          <v-text-field v-model="m"
-                        :min="2"
-                        class="mt-0 pt-0"
-                        type="number"
-                        style="width: 60px"/>
-        </template>
-      </v-slider>
-    </p>
+        <v-slider v-model="n"
+                  :min="1"
+                  :max="Math.max(255, n * 1.1)"
+                  label="modulus" >
+          <template v-slot:append>
+            <v-text-field v-model="n"
+                          :min="1"
+                          class="mt-0 pt-0"
+                          type="number"
+                          style="width: 60px"/>
+          </template>
+        </v-slider>
 
-<!--    <v-row>-->
-<!--      <v-col cols="12" sm="4"></v-col>-->
-<!--      -->
-<!--    </v-row>-->
-   <p>
-     <v-switch label="Show outer circle" v-model="showCircle" />&emsp;&emsp;
-     <v-switch label="Show arrows" v-model="showArrows" />&emsp;&emsp;
+        <v-slider v-model="m"
+                  :min="2"
+                  :max="Math.max(255, m * 1.1)"
+                  label="multiplier" >
+          <template v-slot:append>
+            <v-text-field v-model="m"
+                          :min="2"
+                          class="mt-0 pt-0"
+                          type="number"
+                          style="width: 60px"/>
+          </template>
+        </v-slider>
 
-   </p>
-   
-    <p>
-      Show segment length in color as:&emsp;&emsp;
-      <v-switch label="Hue" v-model="lengthAsHue" style="display:inline-block" />&emsp;&emsp;
-      <v-switch label="Lightness" v-model="lengthAsLightness" style="display:inline-block" />&emsp;&emsp;
-      <v-switch label="R" v-model="lengthAsR" style="display:inline-block" />&emsp;&emsp;
-      <v-switch label="G" v-model="lengthAsG" style="display:inline-block" />&emsp;&emsp;
-      <v-switch label="B" v-model="lengthAsB" style="display:inline-block" />
-      <br>
-      Show different loops in color as:&emsp;&emsp;
-      <v-switch label="Hue" v-model="loopsAsHue" style="display:inline-block" />&emsp;&emsp;
-      <v-switch label="Lightness" v-model="loopsAsLightness" style="display:inline-block" />&emsp;&emsp;
-      <v-switch label="R" v-model="loopsAsR" style="display:inline-block" />&emsp;&emsp;
-      <v-switch label="G" v-model="loopsAsG" style="display:inline-block" />&emsp;&emsp;
-      <v-switch label="B" v-model="loopsAsB" style="display:inline-block" />
-      <br>
-      (You can use either HSL or RGB at a time, and you can only use one component to mean one thing)
-<!--      <v-radio-group v-model="radioGroup">-->
-<!--        <v-radio-->
-<!--              v-for="n in 3"-->
-<!--              :key="n"-->
-<!--              :label="`Radio ${n}`"-->
-<!--              :value="n"-->
-<!--        ></v-radio>-->
-<!--      </v-radio-group>-->
-    </p>
+        <hr>
+        <v-switch label="Show outer circle" v-model="showCircle" style="display:inline-block"/>&emsp;
+        <v-switch label="Show outer points" v-model="showPoints" style="display:inline-block"/>&emsp;
+        <v-switch label="Show arrows" v-model="showArrows" style="display:inline-block"/>
+        <!-- Other toggles: Display numbers on the rim... -->
+        <hr>
 
-    <svg :width="size * 2"
-         :height="size * 2"
-         :viewBox="'-' + size + ' -' + size + ' ' + size * 2 + ' ' + size * 2" >
-      <g v-for="line in lines"
-         v-let="color = computeColor(line)">
-        <line :x1="line.x1"
-              :y1="line.y1"
-              :x2="line.x2"
-              :y2="line.y2"
-              :style="{stroke: color, 'stroke-width': '1' }" />
-        <polygon v-if="showArrows"
-                 :points="computeArrow(line)"
-                 :style="{fill: color, stroke: 'none' }" />
-      </g>
-      <circle v-if="showCircle"
-              cx="0" cy="0"
-              stroke="rgb(180,180,180)" fill="none"
-              stroke-width="0.5"
-              :r="size" />
-    </svg>
+        Show segment length in color as:&emsp;
+        <v-switch label="Hue" v-model="lengthAsHue" style="display:inline-block" />&emsp;
+        <v-switch label="Lightness" v-model="lengthAsLightness" style="display:inline-block" color="white" />&emsp;
+        <v-switch label="R" v-model="lengthAsR" style="display:inline-block" color="red" />&emsp;
+        <v-switch label="G" v-model="lengthAsG" style="display:inline-block" color="green" />&emsp;
+        <v-switch label="B" v-model="lengthAsB" style="display:inline-block" color="blue" />
+        <br>
+        Show different loops in color as:&emsp;
+        <v-switch label="Hue" v-model="loopsAsHue" style="display:inline-block" />&emsp;
+        <v-switch label="Lightness" v-model="loopsAsLightness" style="display:inline-block" color="white" />&emsp;
+        <v-switch label="R" v-model="loopsAsR" style="display:inline-block" color="red" />&emsp;
+        <v-switch label="G" v-model="loopsAsG" style="display:inline-block" color="green" />&emsp;
+        <v-switch label="B" v-model="loopsAsB" style="display:inline-block" color="blue" />
+        <br>
+        <small>(You can use either HSL or RGB at a time, and you can only use one component to mean one thing)</small>
+        <hr>
 
+        <!--            </v-expansion-panel-content>-->
+        <!--          </v-expansion-panel>-->
+        <!--        </v-expansion-panels>-->
+      </v-col>
+      <v-col cols="12" lg="8">
+
+        <svg :width="size * 2 + 4"
+             :height="size * 2 + 4"
+             :viewBox="'-' + (size + 2) + ' -' + (size + 2) + ' ' + (size * 2 + 4) + ' ' + (size * 2 + 4)">
+          <g v-for="line in lines"
+             v-let="color = computeColor(line)">
+            <line :x1="line.x1"
+                  :y1="line.y1"
+                  :x2="line.x2"
+                  :y2="line.y2"
+                  :style="{stroke: color, 'stroke-width': '1' }" />
+            <polygon v-if="showArrows"
+                     :points="computeArrow(line)"
+                     :style="{fill: color, stroke: 'none' }" />
+          </g>
+          <circle v-if="showCircle"
+                  cx="0" cy="0"
+                  stroke="rgb(180,180,180)" fill="none"
+                  stroke-width="0.5"
+                  :r="size" />
+          <circle v-if="showPoints"
+                  v-for="point in points"
+                  :cx="point.x"
+                  :cy="point.y"
+                  stroke="none"
+                  fill="rgb(210,210,210)"
+                  r="2" />
+        </svg>
+
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -120,6 +131,7 @@
       m: 2,
       
       showCircle: true,
+      showPoints: true,
       showArrows: false,
       
       lengthAsHue: false,
