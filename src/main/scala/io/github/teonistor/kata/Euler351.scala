@@ -4,27 +4,27 @@ import scala.collection.mutable
 
 class Euler351(size: Int) {
 
-  def hiddenPoints(): Long =
-    generatePoints()
-//      .to(LazyList)
-//      .count((coprimes _).tupled)
-      .filter((toInclude _).tupled)
-      .map(_=> 1L)
-      .sum * 6
+  /* TODO Explain theory
+   *
+   */
 
- /* def hiddenPoints(): Long =
-    generatePoints()
-      //      .to(LazyList)
-      //      .count((coprimes _).tupled)
-      .map(t => {
-        //        val b = coprimes _ tupled t
-        val k = t._1 == 1
-        val b = coprimes(t._1, t._2)
-        val s = if (k) "veto" else if (b) "yes" else "no"
-        println(s"$t -> $s")
-        if (!b && !k) 1L else 0L
-      })
-      .sum * 6 */
+  def hiddenPoints(): Long = {
+    val line = size-1
+    val restOfIt = restOfPoints(2)
+    (line + restOfIt) * 6
+  }
+
+  def restOfPoints(level: Int):Long = {
+    if (level >= size - 2)
+      return 0
+    val line = size / level - 1
+    // My initial mind said `level to level * 2 - 2` but that overshot
+    // With `until` 5 and 10 are fine, but 1000 overshoots
+    // There's a more systemic overcounting problem
+    val linesInBetween = (level until level * 2 - 2).map(size / _).sum
+    val restOfIt = restOfPoints(level * 2)
+    line + 2 * restOfIt + linesInBetween
+  }
 
   private def toInclude(a: Int, b: Int) =
     a != 1 && !coprimes(a, b)
