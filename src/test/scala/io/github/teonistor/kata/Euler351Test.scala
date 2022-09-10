@@ -4,24 +4,35 @@ import org.scalatest.funsuite.AnyFunSuite
 
 class Euler351Test  extends AnyFunSuite {
 
-  test("Generate Points") {
-    assert(new Euler351(3).generatePoints().toSet.equals(Set(
-      (1, 0),
-      (2, 0),
-      (3, 0),
-      (1, 1),
-      (2, 1),
-      (1, 2))))
-    assert(new Euler351(5).generatePoints().toSet.equals(Set(
-      (1, 0), (2, 0), (3, 0), (4, 0), (5, 0),
-      (1, 1), (2, 1), (3, 1), (4, 1),
-      (1, 2), (2, 2), (3, 2),
-      (1, 3), (2, 3),
-      (1, 4))))
+  test("Compute Primes") {
+    assert(new Euler351(3).primes.equals(List(
+      2, 3)))
+    assert(new Euler351(10).primes.equals(List(
+      2, 3, 5, 7)))
+    assert(new Euler351(50).primes.equals(List(
+      2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47)))
+  }
+
+  test("Compute Zones A C") {
+    assert(new Euler351(3).computeZonesAC() == 0)
+    assert(new Euler351(5).computeZonesAC() == 0)
+    assert(new Euler351(6).computeZonesAC() == 1)
+ }
+
+  test("Compute Zone B") {
+    assert(new Euler351(3).computeZoneB() == 0)
+    assert(new Euler351(5).computeZoneB() == 1)
+    assert(new Euler351(10).computeZoneB() == 4)
+  }
+
+  test("Compute Zone D") {
+    assert(new Euler351(3).computeZoneD() == 2)
+    assert(new Euler351(5).computeZoneD() == 4)
+    assert(new Euler351(10).computeZoneD() == 9)
   }
 
   test("HCD") {
-    val e = new Euler351(0)
+    val e = new Euler351(100)
 
     assert(e.hcd(7, 3) == 1)
     assert(e.hcd(2, 4) == 2)
@@ -36,18 +47,23 @@ class Euler351Test  extends AnyFunSuite {
   }
 
   test("H(5)") {
-    assert(new Euler351(5).hiddenPoints() == 30L)
+    assert(new Euler351(5).computePointsOfInterest() == 30L)
   }
 
   test("H(10)") {
-    assert(new Euler351(10).hiddenPoints() == 138L)
+    assert(new Euler351(10).computePointsOfInterest() == 138L)
   }
 
   test("H(1000)") {
-    assert(new Euler351(1000).hiddenPoints() == 1177848L)
+    assert(new Euler351(1000).computePointsOfInterest() == 1177848L)
+  }
+
+  test("H(10 000)") {
+    println(s"H(10 000) = ${new Euler351(10_000).computePointsOfInterest()}")
+    // After about 1 minute, 117645084
   }
 
   test("H(100 000 000)") {
-    println(s"H(100 000 000) = ${new Euler351(100_000_000).hiddenPoints()}")
+    println(s"H(100 000 000) = ${new Euler351(100_000_000).computePointsOfInterest()}")
   }
 }
