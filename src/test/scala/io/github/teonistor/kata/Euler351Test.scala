@@ -46,6 +46,15 @@ class Euler351Test  extends AnyFunSuite {
     assert(e.hcd(200, 3) == 1)
   }
 
+  test("brutalPow()") {
+    val e = new Euler351(0)
+
+    assert(e.brutalPow(1, 10) == 1)
+    assert(e.brutalPow(10, 7) == 10000000)
+    assert(e.brutalPow(2, 10) == 1024)
+    assert(e.brutalPow(3, 4) == 81)
+  }
+
   test("H(5)") {
     assert(new Euler351(5).computePointsOfInterest() == 30L)
   }
@@ -58,9 +67,26 @@ class Euler351Test  extends AnyFunSuite {
     assert(new Euler351(1000).computePointsOfInterest() == 1177848L)
   }
 
+  test("H(various)") {
+    println(s"H(1 000) = ${new Euler351(1_000).computePointsOfInterest()}")
+    println(s"H(2 000) = ${new Euler351(2_000).computePointsOfInterest()}")
+    println(s"H(4 000) = ${new Euler351(4_000).computePointsOfInterest()}")
+    println(s"H(8 000) = ${new Euler351(8_000).computePointsOfInterest()}")
+  }
+
   test("H(10 000)") {
-    println(s"H(10 000) = ${new Euler351(10_000).computePointsOfInterest()}")
+    val result = new Euler351(10_000).computePointsOfInterest()
+    println(s"H(10 000) = $result")
     // After about 1 minute, 117645084
+    assert(result == 117645084)
+  }
+
+  test("H(100 000)") {
+    println(s"H(100 000) = ${new Euler351(100_000).computePointsOfInterest()}")
+  }
+
+  test("H(1 000 000)") {
+    println(s"H(1 000 000) = ${new Euler351(1_000_000).computePointsOfInterest()}")
   }
 
   test("H(100 000 000)") {

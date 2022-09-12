@@ -27,7 +27,7 @@ class Euler351(n: Int) {
 
   lazy private[kata] val primes = computePrimes()
 
-  private def computePrimes(): List[Int] = {
+  private def computePrimes(): Array[Int] = {
     val set = 2 to n/2 to mutable.TreeSet
 
     @tailrec
@@ -46,12 +46,12 @@ class Euler351(n: Int) {
       }
 
     def launchSieve(seed: Int): Unit = {
-      logIf(seed / 1000)
+      logIf(seed / 100)
       sieve(seed << 1, seed)
     }
 
     set.iterator.foreach(launchSieve)
-    set.toList
+    set.to(Array)
   }
 
   def computePointsOfInterest(): Long = {
@@ -61,38 +61,99 @@ class Euler351(n: Int) {
   }
 
   private[kata] final def computeZonesAC() = {
+  /*  val contributions = Array.fill(primes.size)(0)
 
     @tailrec
-    def step1(intercept:Int = n-1, x:Int = n-1, y:Int = 1,
-              ratiosEncountered:Set[(Int,Int)] = Set.empty,
-              accumulator:Long = 0): Long = {
+    def computeNumbers(i:Int = 0, x:Int = 1, y:Int = 1): (Int, Int) ={
+      if (i >= contributions.length)
+        (x, y)
+      else if (contributions(i) > 0)
+        computeNumbers(i+1, x * brutalPow(primes(i), contributions(i)), y)
+      else if (contributions(i) < 0)
+        computeNumbers(i+1, x, y * brutalPow(primes(i), -contributions(i)))
+      else
+        computeNumbers(i+1, x, y)
+    } */
 
-      if (x < 2)
+    val contributionsX = Array.fill(primes.length)(-1)
+    val contributionsY = Array.fill(primes.length)(-1)
+
+    @tailrec
+    @inline
+    def computeNumber(contributions: Array[Int],
+                      i: Int = 0, accumulator: Int = 1): Int = {
+      if (i >= contributions.length) {
+//        println(s"computeNumber :: $accumulator")
         accumulator
-      else if (x <= y) {
-        if (intercept % 1000 == 0)
-          println(s"intercept = $intercept")
-        step1(intercept - 1, intercept - 1, 1, ratiosEncountered, accumulator)
       }
       else {
-
-        // Shortcut for an easy case on the computationally unlucky side
-        if (x == y + 1)
-          step1(intercept, x-1, y+1, ratiosEncountered + ((x,y)), accumulator)
-        else {
-//          println(s"x = $x, y = $y")
-
-          val cd = hcd(x, y)
-          val ratio = (x / cd, y / cd)
-          if (ratiosEncountered contains ratio)
-            step1(intercept, x-1, y+1, ratiosEncountered, accumulator)
-          else
-            step1(intercept, x-1, y+1, ratiosEncountered + ratio, accumulator+cd-1)
-        }
+        computeNumber(contributions, i+1, accumulator * math.pow(primes(i), contributions(i)).asInstanceOf[Int])
       }
     }
 
-    step1()
+    @tailrec
+    def iterateCombinations(contributions: Array[Int], i: Int, endCondition: Int=>Boolean, continuation: Int=>Int, hitEnd:Boolean = false, accumulator:Int = 0): Int ={
+      if (i < 0) {
+//        println(s"iterateCombinations :: $accumulator")
+        accumulator
+      }
+
+      else if (i >= primes.length) {
+        val number = computeNumber(contributions)
+        if (endCondition(number))
+          iterateCombinations(contributions, i-1, endCondition, continuation, hitEnd=true, accumulator)
+        else
+          iterateCombinations(contributions, i-1, endCondition, continuation, hitEnd=false, accumulator + continuation(number))
+
+      } else {
+        if (hitEnd)
+          if (contributions(i) == 0) {
+            contributions(i) = -1
+            iterateCombinations(contributions, i-1, endCondition, continuation, hitEnd=true, accumulator)
+          } else {
+            contributions(i) = -1
+            iterateCombinations(contributions, i-1, endCondition, continuation, hitEnd=false, accumulator)
+          }
+        else {
+          contributions(i) += 1
+          iterateCombinations(contributions, i+1, endCondition, continuation, hitEnd=false, accumulator)
+        }
+      }
+    }
+/*
+    // To insulate tail and non-tail cals
+    def launchIterateCombinations(contributions: Array[Int], i: Int, continuation: Int=>Int): Int =
+      iterateCombinations(contributions, i, continuation)
+
+//    @tailrec
+    def iterateOneContribution(index: Int = 0
+    ,
+              accumulator:Long = 0): Long = {
+      if (index >= contributions.length) {
+        0
+      }
+      else {
+
+        val resultFromDeep = 9999
+        if (contributions(index) > 0)
+          contributions(index) = -contributions(index)
+        else
+          contributions(index) = -contributions(index) + 1
+
+        iterateOneContribution()
+      }
+
+    }*/
+
+    iterateCombinations(contributionsX, 0, _ > n,
+      x => iterateCombinations(contributionsY, 0, x + _ > n, y => {
+        if (x > y) {
+//          println(s"Reached top with $x, $y")
+          n / (x + y) - 1
+        }
+        else
+          0
+      }))
   }
 
   private[kata] final def computeZoneB() =
@@ -101,20 +162,31 @@ class Euler351(n: Int) {
   private[kata] final def computeZoneD() =
     n - 1
 
-  def restOfPoints(level: Int):Long = {
-    if (level >= n - 2)
-      return 0
-    val line = n / level - 1
-    // My initial mind said `level to level * 2 - 2` but that overshot
-    // With `until` 5 and 10 are fine, but 1000 overshoots
-    // There's a more systemic overcounting problem
-    val linesInBetween = (level until level * 2 - 2).map(n / _).sum
-    val restOfIt = restOfPoints(level * 2)
-    line + 2 * restOfIt + linesInBetween
+  @tailrec
+  private[kata] final def brutalPow(a: Int, b: Int, more:Int = 1): Int = {
+    if (b < 1)
+      more
+    else if (b == 1)
+      a * more
+    else if (b % 2 == 0)
+      brutalPow(a * a, b / 2, more)
+    else
+      brutalPow(a, b - 1, more * a)
   }
+//  def restOfPoints(level: Int):Long = {
+//    if (level >= n - 2)
+//      return 0
+//    val line = n / level - 1
+//    // My initial mind said `level to level * 2 - 2` but that overshot
+//    // With `until` 5 and 10 are fine, but 1000 overshoots
+//    // There's a more systemic overcounting problem
+//    val linesInBetween = (level until level * 2 - 2).map(n / _).sum
+//    val restOfIt = restOfPoints(level * 2)
+//    line + 2 * restOfIt + linesInBetween
+//  }
 
   private[kata] final def hcd(a: Int, b: Int): Int = {
-
+/*
     @tailrec
     def hcdInner(remainingPrimes:List[Int] = primes, a:Int = a, b:Int = b, accumulator:Int = 1): Int = {
 //      println("hcdInner()")
@@ -132,6 +204,7 @@ class Euler351(n: Int) {
     }
 
 //    val limit = Math.sqrt(Math.max(a, b))
-    hcdInner()
+    hcdInner()*/
+    0
   }
 }
