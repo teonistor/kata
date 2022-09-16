@@ -79,7 +79,7 @@ class Euler351(n: Int) {
       }
 
     def launchSieve(seed: Int): Unit = {
-      logIf(seed / 100)
+      logIf(seed / 1000)
       sieve(seed << 1, seed)
     }
 
@@ -112,7 +112,6 @@ class Euler351(n: Int) {
     val contributionsY = Array.fill(primes.length)(-1)
 
     @tailrec
-    @inline
     def computeNumber(contributions: Array[Int],
                       i: Int = 0, accumulator: Int = 1): Int = {
       if (i >= contributions.length) {
@@ -123,6 +122,94 @@ class Euler351(n: Int) {
         computeNumber(contributions, i+1, accumulator * math.pow(primes(i), contributions(i)).asInstanceOf[Int])
       }
     }
+
+    def countPoints(x: Int, y: Int): Int =
+      if (x > y) {
+        //          println(s"Reached top with $x, $y")
+        n / (x + y) - 1
+      } else
+        0
+
+//    val priorX = mutable.Stack.empty[Int]
+//    val priorY = mutable.Stack.empty[Int]
+
+    val x = Array.fill(primes.length)(1)
+    val y = Array.fill(primes.length)(1)
+    val stage = Array.fill(primes.length)(0)
+    var accumulator = 0
+    var i = 0
+//    var multiply = true
+
+    while (i >= 0) {
+      if (i >= primes.length){
+        i -= 1
+        accumulator += countPoints(x(i), y(i))
+      }
+
+      stage(i) match {
+        case 0 =>
+          stage(i) = 1
+          x(i) = x.lift(i-1).getOrElse(1)
+          y(i) = y.lift(i-1).getOrElse(1)
+        case 1 =>
+          x(i) *= primes(i)
+        case 2 =>
+          stage(i) = 3
+          x(i) = x.lift(i-1).getOrElse(1)
+          y(i) = y.lift(i-1).getOrElse(1) * primes(i)
+        case 3 =>
+          y(i) *= primes(i)
+      }
+
+      if (x(i) + y(i) > n) {
+        stage(i) += 1
+        if (stage(i) > 3)
+          i -= 1
+
+      } else {
+        i += 1
+        if (i < primes.length)
+          stage(i) = 0
+      }
+    }
+
+    /*def iterateCombinations1(x: Int, y: Int, i: Int, accumulator: Int = 0): Int ={
+
+      def carefully(x:Int)=
+        iterateCombinations1(x, y, i, 1)
+
+      if (i >= primes.length) {
+//        if (priorX.isEmpty)
+//          countPoints(x, y)
+//        else
+          iterateCombinations1(priorX.pop(), priorY.pop(), i-1, accumulator + countPoints(x, y))
+
+      } else {
+
+        var count = 0
+        var mutated = x
+        while(mutated + y <= n) {
+          count += iterateCombinations1(mutated, y, i+1)
+          mutated *= primes(i)
+        }
+        // Don't redo the (x, y) case
+        mutated = y * primes(i)
+        while (x + mutated <= n) {
+          count += iterateCombinations1(x, mutated, i + 1)
+          mutated *= primes(i)
+        }
+
+//        def iterInner(x: Int, y: Int,
+//                      xFactor: Int, yFactor: Int,
+//                      accumulator: Int = 0): Int =
+//          if (x + y > n)
+//            accumulator
+//          else
+//            iterInner(x * xFactor, y * yFactor, xFactor, yFactor, accumulator + countPoints(x, y))
+
+        count
+      }
+    }*/
 
     @tailrec
     def iterateCombinations(contributions: Array[Int], i: Int, endCondition: Int=>Boolean, continuation: Int=>Int, hitEnd:Boolean = false, accumulator:Int = 0): Int ={
@@ -178,15 +265,18 @@ class Euler351(n: Int) {
 
     }*/
 
-    iterateCombinations(contributionsX, 0, _ > n,
-      x => iterateCombinations(contributionsY, 0, x + _ > n, y => {
-        if (x > y) {
-//          println(s"Reached top with $x, $y")
-          n / (x + y) - 1
-        }
-        else
-          0
-      }))
+//    iterateCombinations(contributionsX, 0, _ > n,
+//      x => iterateCombinations(contributionsY, 0, x + _ > n, y => {
+//        if (x > y) {
+////          println(s"Reached top with $x, $y")
+//          n / (x + y) - 1
+//        }
+//        else
+//          0
+//      }))
+//    iterateCombinations1(1, 1, 0)
+
+    accumulator
   }
 
   private[kata] final def computeZoneB() =
