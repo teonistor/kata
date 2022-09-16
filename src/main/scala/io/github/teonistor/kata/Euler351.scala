@@ -1,7 +1,10 @@
 package io.github.teonistor.kata
 
+import java.io.{BufferedReader, File, FileReader, FileWriter}
 import scala.annotation.tailrec
 import scala.collection.mutable
+import scala.jdk.CollectionConverters.IteratorHasAsScala
+import scala.util.Using
 
 class Euler351(n: Int) {
 
@@ -25,7 +28,37 @@ class Euler351(n: Int) {
    * We precompute the primes up to n/2 to aid the hcd calculation, and ... TODO
    */
 
-  lazy private[kata] val primes = computePrimes()
+  lazy private[kata] val primes = loadOrComputePrimes()
+
+  private def loadOrComputePrimes(): Array[Int] = {
+    val file = new File(s"primes_$n")
+    loadOrComputePrimesFrom(file)
+  }
+
+  private def loadOrComputePrimesFrom(file: File) = {
+    Some(file)
+      .filter(_.exists)
+      .map(file => {
+        println(s"Loading primes for n=$n from $file")
+        new FileReader(file)
+      })
+      .map(new BufferedReader(_))
+      .map(reader => Using.resource(reader)(_
+        .lines()
+        .iterator.asScala
+        .map(_.toInt)
+        .toArray))
+      .getOrElse(computeAndSavePrimes(file))
+  }
+
+  private def computeAndSavePrimes(file: File): Array[Int] = {
+    println(s"Computing primes for n=$n")
+    val primes = computePrimes()
+    Using.resource(new FileWriter(file))(wr => {
+      primes.foreach(prime => wr.write(s"$prime\n"))
+    })
+    primes
+  }
 
   private def computePrimes(): Array[Int] = {
     val set = 2 to n/2 to mutable.TreeSet
