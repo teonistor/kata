@@ -14,14 +14,8 @@ object _22 {
 //            x + y * 51L + z * 51L * 51L))))
             (x, y, z)))))
     } .map {
-      case ("on", set) => (_: Set[(Int,Int,Int)]) ++ {
-        println(s"Got ${set.size}")
-        set
-      }
-      case ("off", set) => (_: Set[(Int,Int,Int)]) -- {
-        println(s"Got ${set.size}")
-        set
-      }
+      case ("on",  set) => (_: Set[(Int,Int,Int)]) ++ set
+      case ("off", set) => (_: Set[(Int,Int,Int)]) -- set
     } .foldLeft(Set.empty[(Int,Int,Int)])((set, op) => op(set))
       .size
   }
@@ -36,14 +30,10 @@ object _22 {
 
   @tailrec
   private def adjustRange(l: Int, r: Int): LazyList[Int] =
-    if (l > r) {
-      println(s"Swapped values: $l, $r")
+    if (l > r)
       adjustRange(r, l)
-    }
-    else if (r < -50 || l > 50) {
-      println(s"Bang! $l, $r")
+    else if (r < -50 || l > 50)
       LazyList.empty
-    }
     else
       (max(l, -50) to min(r, 50)).to(LazyList)
 }
