@@ -42,15 +42,17 @@ object _19 {
       // Slight edge case
       .toSet
 
-    val r = v.to(LazyList)
-      .flatMap(arbitraryBeginning =>
-        solve(arbitraryBeginning, Set((0, 0, 0)), v - arbitraryBeginning))
-      .sortBy(_.size)
+    val r = solve(v.head, Set((0, 0, 0)), v.tail)
 
-    // !!! java.util.NoSuchElementException: head of empty lazy list
-    println(r.head)
-    println(r(1))
-    println(r(2))
+
+//    v.to(LazyList)
+//      .flatMap(arbitraryBeginning =>
+//        solve(arbitraryBeginning, - arbitraryBeginning))
+//      .sortBy(_.size)
+
+//    println(r.head)
+//    println(r(1))
+//    println(r(2))
     r.head.size
   }
 
@@ -66,40 +68,50 @@ object _19 {
           .toSet)
     }
 
-  private def solve(beacons: Set[Point], scanners: Set[Point], input: Set[Set[Point]]): LazyList[Set[Point]] =
+  private def solve(beacons: Set[Point], scanners: Set[Point], input: Set[Set[Point]], debugDepth:Int = 1): LazyList[Set[Point]] =
     if (input.isEmpty)
       LazyList(beacons)
 
     else {
+      println(s"Depth $debugDepth - ${beacons.size} beacons")
+
       input.to(LazyList).flatMap(current =>
         turnAndAffix(beacons, current)
-          // Thanks game // Actually no
-//        .filter(_.matchedCount > 11)
+          // Thanks game
+          .filter(_.matchedCount > 11)
+//          .tapEach(r => println(s"A t.a result with ${r.matchedCount} matches"))
 
-          .filter(_.unmatched.forall(point => !beacons.exists(isInBox(point, _))))
+          .filter(_.unmatched.forall(point => !scanners.exists(isInBox(point, _))))
+//          .tapEach(r => println("Passing the unmatched filter"))
           .filter(result => (beacons -- result.matched).forall(point => !isInBox(point, result.diff)))
 
           .flatMap(result => {
             solve(beacons ++ result.unmatched,
               scanners + result.diff,
-              input - current)
+              input - current,
+              debugDepth + 1)
           }))
         .sortBy(_.size)
+        .distinct
     }
 
   @VisibleForTesting
-  private[y2021] def isInBox(point: Point, boxCentre: Point) =
-    Math.abs(point._1 - boxCentre._1) < 1001 &&
+  private[y2021] def isInBox(point: Point, boxCentre: Point) = {
+    val bool = Math.abs(point._1 - boxCentre._1) < 1001 &&
       Math.abs(point._2 - boxCentre._2) < 1001 &&
       Math.abs(point._3 - boxCentre._3) < 1001
+    bool
+  }
 
   @VisibleForTesting
   private[y2021] def turnAndAffix(target: Set[Point], flotant: Set[Point]) ={
-    orientations.indices.to(LazyList).flatMap(i => {
+    val value = orientations.indices.to(LazyList).flatMap(i => {
       val ori = orientations(i)
       affix(target, flotant.map(ori)).map(new TurnAndAffixResult(i, _))
     })
       .sortBy(-_.matchedCount)
+//    println("matchedCount: " + value.map(_.matchedCount).toList)
+    value.filter(_.matchedCount > 1)
   }
 
   @VisibleForTesting
