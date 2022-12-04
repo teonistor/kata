@@ -2,7 +2,7 @@ package io.github.teonistor.adventofcode.y2022
 
 import io.github.teonistor.adventofcode.AdventOfCodeSolution
 
-object _02 extends AdventOfCodeSolution[Int](2) {
+object _02 extends AdventOfCodeSolution[Int] {
 
   def _1(input: String): Int =
     input.split("\n").map {

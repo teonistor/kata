@@ -2,7 +2,7 @@ package io.github.teonistor.adventofcode.y2022
 
 import io.github.teonistor.adventofcode.AdventOfCodeSolution
 
-object _01 extends AdventOfCodeSolution[Int](1){
+object _01 extends AdventOfCodeSolution[Int]{
 
   def _1(input: String): Int =
     solve(input, 1)

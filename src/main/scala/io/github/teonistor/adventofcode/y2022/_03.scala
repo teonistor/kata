@@ -3,7 +3,7 @@ package io.github.teonistor.adventofcode.y2022
 import io.github.teonistor.adventofcode.AdventOfCodeSolution
 import io.github.teonistor.func.Utils.HasLet
 
-object _03 extends AdventOfCodeSolution[Int](3) {
+object _03 extends AdventOfCodeSolution[Int] {
   private type PartFunc = Seq[String] => Iterable[Iterable[String]]
 
   def _1(input: String): Int =
