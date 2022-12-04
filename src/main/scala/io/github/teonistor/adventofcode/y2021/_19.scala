@@ -2,6 +2,9 @@ package io.github.teonistor.adventofcode.y2021
 
 import com.google.common.annotations.VisibleForTesting
 
+import java.util.concurrent.Callable
+import java.util.concurrent.Executors.newFixedThreadPool
+
 object _19 {
   private type Point = (Int, Int, Int)
   private val scannerHeader = "--- scanner (\\d+) ---".r
@@ -68,15 +71,17 @@ object _19 {
           .toSet)
     }
 
-  private def solve(beacons: Set[Point], scanners: Set[Point], input: Set[Set[Point]], debugDepth:Int = 1): LazyList[Set[Point]] =
+  private val executor = newFixedThreadPool(8)
+
+  private def solve(beacons: Set[Point], scanners: Set[Point], input: Set[Set[Point]], debugDepth:Int = 1): Seq[Set[Point]] =
     if (input.isEmpty)
       LazyList(beacons)
 
     else {
       println(s"Depth $debugDepth - ${beacons.size} beacons")
 
-      input.to(LazyList).flatMap(current =>
-        turnAndAffix(beacons, current)
+      input.to(List)
+        .map[Callable[LazyList[Set[Point]]]] (current => () => turnAndAffix(beacons, current)
           // Thanks game
           .filter(_.matchedCount > 11)
 //          .tapEach(r => println(s"A t.a result with ${r.matchedCount} matches"))
@@ -85,12 +90,13 @@ object _19 {
 //          .tapEach(r => println("Passing the unmatched filter"))
           .filter(result => (beacons -- result.matched).forall(point => !isInBox(point, result.diff)))
 
-          .flatMap(result => {
+          .flatMap(result =>
             solve(beacons ++ result.unmatched,
               scanners + result.diff,
               input - current,
-              debugDepth + 1)
-          }))
+              debugDepth + 1)))
+        .map(callable => executor.submit(callable))
+        .flatMap(_.get)
         .sortBy(_.size)
         .distinct
     }
