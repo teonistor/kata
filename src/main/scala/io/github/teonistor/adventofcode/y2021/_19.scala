@@ -71,23 +71,20 @@ object _19 {
           .toSet)
     }
 
-  private val executor = newFixedThreadPool(8)
-
-  private def solve(beacons: Set[Point], scanners: Set[Point], input: Set[Set[Point]], debugDepth:Int = 1): Seq[Set[Point]] =
+  private def solve(beacons: Set[Point], scanners: Set[Point], input: Set[Set[Point]], debugDepth:Int = 1): LazyList[Set[Point]] =
     if (input.isEmpty)
       LazyList(beacons)
 
     else {
       println(s"Depth $debugDepth - ${beacons.size} beacons")
 
-      input.to(List)
-        .map[Callable[LazyList[Set[Point]]]] (current => () => turnAndAffix(beacons, current)
-          // Thanks game
+      input.to(LazyList).flatMap(current =>
+        turnAndAffix(beacons, current)
+          // Thanks game for stipulating at least 12 points must overlap
           .filter(_.matchedCount > 11)
-//          .tapEach(r => println(s"A t.a result with ${r.matchedCount} matches"))
-
+          // Any new points not matched to existing ones must not be within range of existing beacons
           .filter(_.unmatched.forall(point => !scanners.exists(isInBox(point, _))))
-//          .tapEach(r => println("Passing the unmatched filter"))
+          // Similarly, any existing points not matched must not be within range of the new beacon
           .filter(result => (beacons -- result.matched).forall(point => !isInBox(point, result.diff)))
 
           .flatMap(result =>
@@ -95,10 +92,8 @@ object _19 {
               scanners + result.diff,
               input - current,
               debugDepth + 1)))
-        .map(callable => executor.submit(callable))
-        .flatMap(_.get)
-        .sortBy(_.size)
-        .distinct
+//        .sortBy(_.size)
+//        .distinct
     }
 
   @VisibleForTesting
@@ -109,12 +104,18 @@ object _19 {
     bool
   }
 
+  private val executor = newFixedThreadPool(8)
+
   @VisibleForTesting
   private[y2021] def turnAndAffix(target: Set[Point], flotant: Set[Point]) ={
-    val value = orientations.indices.to(LazyList).flatMap(i => {
-      val ori = orientations(i)
-      affix(target, flotant.map(ori)).map(new TurnAndAffixResult(i, _))
+    val value = orientations.indices.to(List)
+      .map[Callable[LazyList[TurnAndAffixResult]]](i => () => {
+        val ori = orientations(i)
+        affix(target, flotant.map(ori)).map(new TurnAndAffixResult(i, _))
     })
+      .map(callable => executor.submit(callable))
+      .to(LazyList)
+      .flatMap(_.get)
       .sortBy(-_.matchedCount)
 //    println("matchedCount: " + value.map(_.matchedCount).toList)
     value.filter(_.matchedCount > 1)
