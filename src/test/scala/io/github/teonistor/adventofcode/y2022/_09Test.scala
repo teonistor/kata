@@ -13,4 +13,15 @@ class _09Test extends AdventOfCodeTestBase {
   test("medium example") {
     assert(_09._2("R 5\nU 8\nL 8\nD 3\nR 17\nD 10\nL 25\nU 20") == 36)
   }
+
+  test("moveTowards") {
+    assert(_09.moveTowards((2, 2), (3, 3)) == (3, 3))
+    assert(_09.moveTowards((2, 2), (2, 3)) == (2, 3))
+    assert(_09.moveTowards((2, 2), (2, 4)) == (2, 3))
+    assert(_09.moveTowards((2, 2), (0, 2)) == (1, 2))
+    assert(_09.moveTowards((2, 2), (2, 0)) == (2, 1))
+    assert(_09.moveTowards((6, 7), (5, 5)) == (6, 6))
+    assert(_09.moveTowards((6, 7), (8, 8)) == (7, 7))
+    assert(_09.moveTowards((8, 8), (7, 7)) == (7, 7))
+  }
 }

@@ -2,6 +2,7 @@ package io.github.teonistor.adventofcode.y2022
 
 import io.github.teonistor.adventofcode.AdventOfCodeSolution
 
+import java.lang.Math.abs
 import scala.annotation.tailrec
 
 object _09 extends AdventOfCodeSolution[Int] {
@@ -9,7 +10,9 @@ object _09 extends AdventOfCodeSolution[Int] {
 
   private case class State(rope: List[Point],
                            trail: Set[Point]) {
+    @deprecated
     def head = rope.head
+    @deprecated
     def tail = rope.reverse.head
   }
 
@@ -30,6 +33,18 @@ object _09 extends AdventOfCodeSolution[Int] {
         val split = steps.split(" ")
         solve(state, split(0)(0), split(1).toInt)
       }).trail.size
+
+  private def sign(d: Int) =
+    if (d > 0) 1
+    else if (d < 0) -1
+    else 0
+
+  private[y2022] def moveTowards(leader: Point, follower: Point) =
+    if (abs(leader._1 - follower._1) > 1 || abs(leader._2 - follower._2) > 1)
+      ( follower._1 + sign(leader._1 - follower._1),
+        follower._2 + sign(leader._2 - follower._2) )
+    else
+      follower
 
   @tailrec
   private def solve(state: State, direction: Char, steps: Int): State =
