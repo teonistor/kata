@@ -2,7 +2,6 @@ package io.github.teonistor.adventofcode.y2022
 
 import io.github.teonistor.adventofcode.AdventOfCodeSolution
 
-import java.util
 import java.util.concurrent.atomic.AtomicBoolean
 
 object _08 extends AdventOfCodeSolution[Int] {
@@ -14,41 +13,23 @@ object _08 extends AdventOfCodeSolution[Int] {
     val is = array.indices
     val js = array(0).indices
 
-    is.foreach(i =>
-      js.foldLeft(-1)((max, j) => {
-        if (array(i)(j) > max) {
-          visible(i)(j) = true
-          array(i)(j)
-        } else
-          max
-      }))
+    def myFold(i: Int, j: Int, max: Int) =
+      if (array(i)(j) <= max)
+        max
+      else {
+        visible(i)(j) = true
+        array(i)(j)
+      }
 
-    is.foreach(i =>
-      js.reverse.foldLeft(-1)((max, j) => {
-        if (array(i)(j) > max) {
-          visible(i)(j) = true
-          array(i)(j)
-        } else
-          max
-      }))
+    def myRanger(outer:Range, inner:Range, func:(Int,Int,Int)=>Int): Any =
+      outer.foreach(l =>
+        inner.foldLeft(-1)((max, r) =>
+          func(l, r, max)))
 
-    js.foreach(j =>
-      is.foldLeft(-1)((max, i) => {
-        if (array(i)(j) > max) {
-          visible(i)(j) = true
-          array(i)(j)
-        } else
-          max
-      }))
-
-    js.foreach(j =>
-      is.reverse.foldLeft(-1)((max, i) => {
-        if (array(i)(j) > max) {
-          visible(i)(j) = true
-          array(i)(j)
-        } else
-          max
-      }))
+    myRanger(is, js, myFold)
+    myRanger(is, js.reverse, myFold)
+    myRanger(js, is, (j,i,max) => myFold(i,j,max))
+    myRanger(js, is.reverse, (j,i,max) => myFold(i,j,max))
 
     visible.flatten.count(identity)
   }
@@ -63,12 +44,6 @@ object _08 extends AdventOfCodeSolution[Int] {
     is.foreach(i =>
       js.foreach(j => {
         val bump = new AtomicBoolean(true)
-
-//        def stuff(b: Boolean) = {
-//          if (b)
-//            b
-//            else
-//        }
 
         scenic(i)(j)(0) = (j until array(0).length)
           .drop(1)
@@ -94,11 +69,8 @@ object _08 extends AdventOfCodeSolution[Int] {
           .size
       }))
 
-    println(util.Arrays.deepToString(scenic.asInstanceOf[Array[AnyRef]]))
-
     scenic.flatten
-      .map(_/*.map(_+1)*/.product)
+      .map(_.product)
       .max
-
   }
 }
