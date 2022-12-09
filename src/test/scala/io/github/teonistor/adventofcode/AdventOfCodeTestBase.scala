@@ -43,4 +43,24 @@ abstract class AdventOfCodeTestBase extends AnyFunSuite {
     testAndRunW(solution.year, solution.day, 1, solution._1, exampleInput, exampleOutputOne, problemInput)
     testAndRunW(solution.year, solution.day, 2, solution._2, exampleInput, exampleOutputTwo, problemInput)
   }
+
+  /**
+   * Use this when running on the problem input takes longer than, say, a minute, otherwise a full Maven build would take insufferably long
+   */
+  def testOnly[O](year: Int, day: Int, part: Int, solution: String => O, exampleInput: String, exampleOutput: O, problemInput: String): Unit = {
+    val name = "Year %d day %02d part %d".format(year, day, part)
+    test(name) {
+
+      assert(runOne(name, "example", solution(exampleInput)).equals(exampleOutput))
+      println("Skipping run on problem input")
+    }
+  }
+
+  /**
+   * Use this when running on the problem input takes longer than, say, a minute, otherwise a full Maven build would take insufferably long
+   */
+  def testOnly[O](solution: AdventOfCodeSolution[O], exampleInput: String, exampleOutputOne: O, exampleOutputTwo: O, problemInput: String): Unit = {
+    testOnly(solution.year, solution.day, 1, solution._1, exampleInput, exampleOutputOne, problemInput)
+    testOnly(solution.year, solution.day, 2, solution._2, exampleInput, exampleOutputTwo, problemInput)
+  }
 }

@@ -1,12 +1,13 @@
 package io.github.teonistor.adventofcode.y2021
 
 import com.google.common.annotations.VisibleForTesting
+import io.github.teonistor.adventofcode.AdventOfCodeSolution
 
 import java.lang.Math.abs
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors.newFixedThreadPool
 
-object _19 {
+object _19 extends AdventOfCodeSolution[Int]{
   private type Point = (Int, Int, Int)
   private val scannerHeader = "--- scanner (\\d+) ---".r
 
