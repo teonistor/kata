@@ -9,12 +9,7 @@ object _09 extends AdventOfCodeSolution[Int] {
   private type Point = (Int, Int)
 
   private case class State(rope: List[Point],
-                           trail: Set[Point]) {
-    @deprecated
-    def head = rope.head
-    @deprecated
-    def tail = rope.reverse.head
-  }
+                           trail: Set[Point])
 
   private object State {
     private[y2022] def start(n: Int) =
@@ -22,17 +17,16 @@ object _09 extends AdventOfCodeSolution[Int] {
   }
 
   def _1(input: String): Int =
-    solve0(input, 2)
+    solve(input, 2)
 
   def _2(input: String): Int =
-    solve0(input, 10)
+    solve(input, 10)
 
-  private def solve0(input: String, size: Int) =
+  private def solve(input: String, size: Int) =
     input.split("\n").toList
-      .foldLeft(State.start(size))((state, steps) => {
-        val split = steps.split(" ")
-        solve(state, split(0)(0), split(1).toInt)
-      }).trail.size
+      .map(_.split(" "))
+      .foldLeft(State.start(size))((state, step) => solveOneLine(state, step(0)(0), step(1).toInt))
+      .trail.size
 
   private def sign(d: Int) =
     if (d > 0) 1
@@ -47,27 +41,28 @@ object _09 extends AdventOfCodeSolution[Int] {
       follower
 
   @tailrec
-  private def oneMove(current: Point,
-                      remaining: List[Point],
-                      done: List[Point] = List.empty): List[Point] =
+  private def oneMoveReversed(current: Point,
+                              remaining: List[Point],
+                              done: List[Point] = List.empty): List[Point] =
     if (remaining.isEmpty)
       done.prepended(current)
     else
-      oneMove(moveTowards(current, remaining.head), remaining.tail, done.prepended(current))
+      oneMoveReversed(moveTowards(current, remaining.head), remaining.tail, done.prepended(current))
 
   @tailrec
-  private def solve(state: State, direction: Char, steps: Int): State =
+  private def solveOneLine(state: State, direction: Char, steps: Int): State =
     if (steps < 1)
       state
     else {
+      val head = state.rope.head
       val newHead = direction match {
-        case 'R' =>(state.head._1 + 1, state.head._2)
-        case 'L' =>(state.head._1 - 1, state.head._2)
-        case 'U' => (state.head._1, state.head._2 - 1)
-        case 'D' => (state.head._1, state.head._2 + 1)
+        case 'R' => (head._1 + 1, head._2)
+        case 'L' => (head._1 - 1, head._2)
+        case 'U' => (head._1, head._2 - 1)
+        case 'D' => (head._1, head._2 + 1)
       }
+      val reversedRope = oneMoveReversed(newHead, state.rope.tail)
 
-      val rev = oneMove(newHead, state.rope.tail)
-      solve(State(rev.reverse, state.trail.incl(rev.head)), direction, steps - 1)
+      solveOneLine(State(reversedRope.reverse, state.trail.incl(reversedRope.head)), direction, steps - 1)
     }
 }
