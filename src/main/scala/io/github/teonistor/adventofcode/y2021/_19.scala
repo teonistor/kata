@@ -2,6 +2,7 @@ package io.github.teonistor.adventofcode.y2021
 
 import com.google.common.annotations.VisibleForTesting
 
+import java.lang.Math.abs
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors.newFixedThreadPool
 
@@ -48,15 +49,21 @@ object _19 {
     val r = solve(v.head, Set((0, 0, 0)), v.tail)
 
 
-//    v.to(LazyList)
-//      .flatMap(arbitraryBeginning =>
-//        solve(arbitraryBeginning, - arbitraryBeginning))
-//      .sortBy(_.size)
+    r.head._1.size
+  }
 
-//    println(r.head)
-//    println(r(1))
-//    println(r(2))
-    r.head.size
+  def _2(input: String): Int = {
+    val v = input.split("\n\n").to(LazyList)
+      .map(readOneScannerInput)
+      .map(_._2)
+      // Slight edge case
+      .toSet
+
+    val value = solve(v.head, Set((0, 0, 0)), v.tail).head._2.toList
+    value.indices.flatMap(i =>
+      value.indices.map(j =>
+        (value(i) - value(j)).manhattan))
+      .max
   }
 
   @VisibleForTesting
@@ -71,9 +78,9 @@ object _19 {
           .toSet)
     }
 
-  private def solve(beacons: Set[Point], scanners: Set[Point], input: Set[Set[Point]], debugDepth:Int = 1): LazyList[Set[Point]] =
+  private def solve(beacons: Set[Point], scanners: Set[Point], input: Set[Set[Point]], debugDepth:Int = 1): LazyList[(Set[Point],Set[Point])] =
     if (input.isEmpty)
-      LazyList(beacons)
+      LazyList((beacons, scanners))
 
     else {
       println(s"Depth $debugDepth - ${beacons.size} beacons")
@@ -97,12 +104,10 @@ object _19 {
     }
 
   @VisibleForTesting
-  private[y2021] def isInBox(point: Point, boxCentre: Point) = {
-    val bool = Math.abs(point._1 - boxCentre._1) < 1001 &&
-      Math.abs(point._2 - boxCentre._2) < 1001 &&
-      Math.abs(point._3 - boxCentre._3) < 1001
-    bool
-  }
+  private[y2021] def isInBox(point: Point, boxCentre: Point) =
+    abs(point._1 - boxCentre._1) < 1001 &&
+      abs(point._2 - boxCentre._2) < 1001 &&
+      abs(point._3 - boxCentre._3) < 1001
 
   private val executor = newFixedThreadPool(8)
 
@@ -147,17 +152,15 @@ object _19 {
       case "-z" => -point._3
     }
 
-  def _2(input: String): Long = {
-    println("Unimplemented")
-    0
-  }
-
   private implicit class PointOps(val point: Point) {
     def -(other: Point): Point =
       (point._1 - other._1, point._2 - other._2, point._3 - other._3)
 
     def +(other: Point): Point =
       (point._1 + other._1, point._2 + other._2, point._3 + other._3)
+
+    def manhattan =
+      abs(point._1) + abs(point._2) + abs(point._3)
   }
 
   private[y2021] case class AffixResult(diff: Point, matched: Set[Point], unmatched: Set[Point]) {
