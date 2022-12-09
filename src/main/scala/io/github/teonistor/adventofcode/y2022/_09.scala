@@ -47,38 +47,27 @@ object _09 extends AdventOfCodeSolution[Int] {
       follower
 
   @tailrec
+  private def oneMove(current: Point,
+                      remaining: List[Point],
+                      done: List[Point] = List.empty): List[Point] =
+    if (remaining.isEmpty)
+      done.prepended(current)
+    else
+      oneMove(moveTowards(current, remaining.head), remaining.tail, done.prepended(current))
+
+  @tailrec
   private def solve(state: State, direction: Char, steps: Int): State =
     if (steps < 1)
       state
-    else
-      direction match {
-        case 'R' =>
-          val newHead = (state.head._1 + 1, state.head._2)
-          val newTail = if (newHead._1 > state.tail._1 + 1)
-              state.head
-            else
-              state.tail
-          solve(State(List(newHead, newTail), state.trail.incl(newTail)), direction, steps - 1)
-        case 'L' =>
-          val newHead = (state.head._1 - 1, state.head._2)
-          val newTail = if (newHead._1 < state.tail._1 - 1)
-              state.head
-            else
-              state.tail
-          solve(State(List(newHead, newTail), state.trail.incl(newTail)), direction, steps - 1)
-        case 'U' =>
-          val newHead = (state.head._1, state.head._2 - 1)
-          val newTail = if (newHead._2 < state.tail._2 - 1)
-              state.head
-            else
-              state.tail
-          solve(State(List(newHead, newTail), state.trail.incl(newTail)), direction, steps - 1)
-        case 'D' =>
-          val newHead = (state.head._1, state.head._2 + 1)
-          val newTail = if (newHead._2 > state.tail._2 + 1)
-              state.head
-            else
-              state.tail
-          solve(State(List(newHead, newTail), state.trail.incl(newTail)), direction, steps - 1)
+    else {
+      val newHead = direction match {
+        case 'R' =>(state.head._1 + 1, state.head._2)
+        case 'L' =>(state.head._1 - 1, state.head._2)
+        case 'U' => (state.head._1, state.head._2 - 1)
+        case 'D' => (state.head._1, state.head._2 + 1)
       }
+
+      val rev = oneMove(newHead, state.rope.tail)
+      solve(State(rev.reverse, state.trail.incl(rev.head)), direction, steps - 1)
+    }
 }
