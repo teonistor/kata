@@ -2,6 +2,8 @@ package io.github.teonistor.adventofcode
 
 import org.scalatest.funsuite.AnyFunSuite
 
+import scala.annotation.unused
+
 abstract class AdventOfCodeTestBase extends AnyFunSuite {
 
   def runOne[O](name: String, kind: String, solution: => O): O = {
@@ -16,7 +18,7 @@ abstract class AdventOfCodeTestBase extends AnyFunSuite {
     val name = "Year %d day %02d part %d".format(year, day, part)
     test(name) {
 
-      assert(runOne(name, "example", solution(exampleInput)).equals(exampleOutput))
+      assert(runOne(name, "example", solution(exampleInput)) == exampleOutput)
       runOne(name, "problem", solution(problemInput))
     }
   }
@@ -25,7 +27,7 @@ abstract class AdventOfCodeTestBase extends AnyFunSuite {
     val name = "Day %02d part %d".format(day, part)
     test(name) {
 
-      assert(runOne(name, "example", solution(exampleInput)).equals(exampleOutput))
+      assert(runOne(name, "example", solution(exampleInput)) == exampleOutput)
       runOne(name, "problem", solution(problemInput))
     }
   }
@@ -45,19 +47,19 @@ abstract class AdventOfCodeTestBase extends AnyFunSuite {
   }
 
   /**
-   * Use this when running on the problem input takes longer than, say, a minute, otherwise a full Maven build would take insufferably long
+   * Use this when running on the problem input takes longer than, say, a minute, otherwise a full Maven build would take insufferably long, or if it requires too much memory
    */
-  def testOnly[O](year: Int, day: Int, part: Int, solution: String => O, exampleInput: String, exampleOutput: O, problemInput: String): Unit = {
+  def testOnly[O](year: Int, day: Int, part: Int, solution: String => O, exampleInput: String, exampleOutput: O, @unused("Keep for easy swap to full run in individual tests") problemInput: String): Unit = {
     val name = "Year %d day %02d part %d".format(year, day, part)
     test(name) {
 
-      assert(runOne(name, "example", solution(exampleInput)).equals(exampleOutput))
+      assert(runOne(name, "example", solution(exampleInput)) == exampleOutput)
       println("Skipping run on problem input")
     }
   }
 
   /**
-   * Use this when running on the problem input takes longer than, say, a minute, otherwise a full Maven build would take insufferably long
+   * Use this when running on the problem input takes longer than, say, a minute, otherwise a full Maven build would take insufferably long, or if it requires too much memory
    */
   def testOnly[O](solution: AdventOfCodeSolution[O], exampleInput: String, exampleOutputOne: O, exampleOutputTwo: O, problemInput: String): Unit = {
     testOnly(solution.year, solution.day, 1, solution._1, exampleInput, exampleOutputOne, problemInput)
