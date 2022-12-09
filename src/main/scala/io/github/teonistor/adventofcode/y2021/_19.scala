@@ -40,31 +40,32 @@ object _19 extends AdventOfCodeSolution[Int]{
     .stripMargin.split("\n").toList
     .map { case orientationR(x, y, z) => (point: Point) => listToPoint(List(x, y, z).map(extractCoordinate(point, _))) }
 
-  def _1(input: String): Int = {
-    val v = input.split("\n\n").to(LazyList)
-      .map(readOneScannerInput)
-      .map(_._2)
-      // Slight edge case
-      .toSet
-
-    val r = solve(v.head, Set((0, 0, 0)), v.tail)
-
-
-    r.head._1.size
-  }
+  def _1(input: String): Int =
+    computeSituation(input)._1.size
 
   def _2(input: String): Int = {
-    val v = input.split("\n\n").to(LazyList)
+    val scanners = computeSituation(input)._2.toList
+    scanners.indices.flatMap(i =>
+      scanners.indices.map(j =>
+        (scanners(i) - scanners(j)).manhattan))
+      .max
+  }
+
+  /**
+   * @return The set of beacons and the set of scanners
+   */
+  private def computeSituation(input: String) = {
+    val beaconSets = input.split("\n\n").to(LazyList)
       .map(readOneScannerInput)
       .map(_._2)
-      // Slight edge case
       .toSet
 
-    val value = solve(v.head, Set((0, 0, 0)), v.tail).head._2.toList
-    value.indices.flatMap(i =>
-      value.indices.map(j =>
-        (value(i) - value(j)).manhattan))
-      .max
+    solve(beaconSets.head, Set((0, 0, 0)), beaconSets.tail)
+      // While theoretically there could be multiple valid point clouds for a given input, there is no stipulation as to how to
+      // choose one, and since the puzzle is supposed to have a unique answer, we choose the first result we find, under the
+      // assumption that it is either unique or equivalent to any other with respect to the questions asked. Since solve()
+      // returns a LazyList, this saves ***a lot*** of time.
+      .head
   }
 
   @VisibleForTesting
@@ -100,8 +101,6 @@ object _19 extends AdventOfCodeSolution[Int]{
               scanners + result.diff,
               input - current,
               debugDepth + 1)))
-//        .sortBy(_.size)
-//        .distinct
     }
 
   @VisibleForTesting
@@ -113,32 +112,26 @@ object _19 extends AdventOfCodeSolution[Int]{
   private val executor = newFixedThreadPool(8)
 
   @VisibleForTesting
-  private[y2021] def turnAndAffix(target: Set[Point], flotant: Set[Point]) ={
-    val value = orientations.indices.to(List)
-      .map[Callable[LazyList[TurnAndAffixResult]]](i => () => {
-        val ori = orientations(i)
-        affix(target, flotant.map(ori)).map(new TurnAndAffixResult(i, _))
-    })
+  private[y2021] def turnAndAffix(target: Set[Point], flotant: Set[Point]) =
+    orientations.indices
+      // Create and execute callables in an eager list, else they wouldn't be called in parallel
+      .to(List)
+      .map[Callable[LazyList[TurnAndAffixResult]]](i => () =>
+        affix(target, flotant.map(orientations(i))).map(new TurnAndAffixResult(i, _)))
       .map(callable => executor.submit(callable))
       .to(LazyList)
       .flatMap(_.get)
+      .filter(_.matchedCount > 1)
       .sortBy(-_.matchedCount)
-//    println("matchedCount: " + value.map(_.matchedCount).toList)
-    value.filter(_.matchedCount > 1)
-  }
 
   @VisibleForTesting
-  private[y2021] def affix(target: Set[Point], flotant: Set[Point]) = {
-    target.to(LazyList).flatMap(oneTarget => {
-      flotant.to(LazyList).map(oneFlotant => {
-        oneTarget - oneFlotant
-
-      })
-    })
+  private[y2021] def affix(target: Set[Point], flotant: Set[Point]) =
+    target.to(LazyList).flatMap(oneTarget =>
+      flotant.to(LazyList).map(oneFlotant =>
+        oneTarget - oneFlotant))
       .distinct
       .map(diff => new AffixResult(diff, flotant.map(_ + diff).groupBy(target.contains)))
       .sortBy(-_.matchedCount)
-  }
 
   private def listToPoint(list: List[Int]) =
     (list.head, list(1), list(2))
