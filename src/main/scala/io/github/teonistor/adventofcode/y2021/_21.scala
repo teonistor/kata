@@ -1,8 +1,10 @@
 package io.github.teonistor.adventofcode.y2021
 
+import io.github.teonistor.adventofcode.AdventOfCodeSolution
+
 import scala.annotation.tailrec
 
-object _21 {
+object _21 extends AdventOfCodeSolution[Long] {
 
   private val startPosReader = "Player (\\d) starting position: (\\d+)".r
 
@@ -28,16 +30,6 @@ object _21 {
       }
 
     stuff(0, poss.map((_, 0)), 0)
-//    rolls
-//      .foldLeft((0, ))((data, roll) => {
-//        val newPos = (data._2(data._1)._1 + roll -1) % 10 + 1
-//        val newScore = data._2(data._1)._1 + newPos
-//        data._2(data._1) = (newPos, newScore)
-//        ((data._1 + 1) % 2, data._2, data._3 + 3)
-//      })
-//      .
-
-
   }
 
   // This takes about 100 seconds and can be improved
@@ -46,7 +38,6 @@ object _21 {
       case startPosReader(player, position) => (player.toInt, position.toInt)
     } .sorted
       .map(_._2)
-//      .to(Vector)
 
     val rolls = (1 to 3).flatMap(a =>
       (1 to 3).flatMap(b =>
@@ -65,9 +56,9 @@ object _21 {
         Map(((nextPlayer + 1) % 2, universes))
       else {
         rolls.flatMap(rollAndUniverses => {
-          val newPos = (nextPlayerPosition + rollAndUniverses._1 - 1) % 10 + 1
-          val newScore = nextPlayerScore + newPos
-          stuff((nextPlayer + 1) % 2, otherPlayerPosition, otherPlayerScore, newPos, newScore, rollAndUniverses._2)
+          val newPosition = (nextPlayerPosition + rollAndUniverses._1 - 1) % 10 + 1
+          val newScore = nextPlayerScore + newPosition
+          stuff((nextPlayer + 1) % 2, otherPlayerPosition, otherPlayerScore, newPosition, newScore, rollAndUniverses._2)
             .view
             .mapValues(_ * universes)
         }).groupMapReduce(_._1)(_._2)(_+_)
@@ -76,8 +67,5 @@ object _21 {
     stuff(0, poss(0), 0, poss(1), 0, 1)
       .values
       .max
-  }
-
-  def main(arg: Array[String]): Unit = {
   }
 }
