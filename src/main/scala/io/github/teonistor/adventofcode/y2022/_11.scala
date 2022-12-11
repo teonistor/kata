@@ -17,8 +17,8 @@ object _11 extends AdventOfCodeSolution[Long] {
 
   private case class Monkey(
     id: Int,
-    items: Queue[Int],
-    op: Int => Int,
+    items: Queue[Long],
+    op: Long => Long,
     divisor: Int,
     trueTarget: Int,
     falseTarget: Int,
@@ -31,8 +31,9 @@ object _11 extends AdventOfCodeSolution[Long] {
         m.id,
         m.copy(op=m.op.andThen(_/3))))
       .toMap
+    val monkeyDivisors = monkeys.map(_.divisor).toSet
 
-    playGame(20, monkeyIds, monkeyMap)
+    playGame(20, monkeyIds, monkeyMap, monkeyDivisors.product)
       .values.toList
       .map(_.activity)
       .sortBy(-_)
@@ -41,7 +42,17 @@ object _11 extends AdventOfCodeSolution[Long] {
   }
 
   def _2(input: String): Long = {
-    1
+    val monkeys = readInput(input)
+    val monkeyIds = monkeys.map(_.id)
+    val monkeyMap = monkeys.map(m => (m.id, m)).toMap
+    val monkeyDivisors = monkeys.map(_.divisor).toSet
+
+    playGame(10_000, monkeyIds, monkeyMap, monkeyDivisors.product)
+      .values.toList
+      .map(_.activity)
+      .sortBy(-_)
+      .take(2)
+      .product
   }
 
   private def readInput(input: String) =
@@ -50,7 +61,7 @@ object _11 extends AdventOfCodeSolution[Long] {
         operator, operand,
         Monkey(
           id.toInt,
-          startItems.split("[, ]+").to(Queue).map(_.toInt),
+          startItems.split("[, ]+").to(Queue).map(_.toLong),
           _,
           divisor.toInt,
           trueTarget.toInt,
@@ -64,35 +75,33 @@ object _11 extends AdventOfCodeSolution[Long] {
     }
 
   @tailrec
-  private def playGame(rounds: Int, monkeyIds: Seq[Int], monkeys: Map[Int, Monkey]): Map[Int, Monkey] = {
-//    println(s"Round ${21-rounds}")
+  private def playGame(rounds: Int, monkeyIds: Seq[Int], monkeys: Map[Int, Monkey], universalDivisor: Long): Map[Int, Monkey] = {
     if (rounds < 1)
       monkeys
     else
-      playGame(rounds - 1, monkeyIds, playRound(monkeyIds, monkeys))
+      playGame(rounds - 1, monkeyIds, playRound(monkeyIds, monkeys, universalDivisor), universalDivisor)
   }
 
   @tailrec
-  private def playRound(monkeyIds: Seq[Int], monkeys: Map[Int, Monkey]): Map[Int, Monkey] =
+  private def playRound(monkeyIds: Seq[Int], monkeys: Map[Int, Monkey], universalDivisor: Long): Map[Int, Monkey] =
     if (monkeyIds.isEmpty)
       monkeys
     else{
-//      println(s"Monkey ${monkeyIds.head}")
-      val newSituation = playTurn(monkeyIds.head, monkeys)
-      playRound(monkeyIds.tail, newSituation)
+      val newSituation = playTurn(monkeyIds.head, monkeys, universalDivisor)
+      playRound(monkeyIds.tail, newSituation, universalDivisor)
     }
 
   @tailrec
-  private def playTurn(currentMonkey: Int, monkeys: Map[Int, Monkey]): Map[Int, Monkey] =
+  private def playTurn(currentMonkey: Int, monkeys: Map[Int, Monkey], universalDivisor: Long): Map[Int, Monkey] =
     if (monkeys(currentMonkey).items.isEmpty)
       monkeys
     else {
-      val worry = monkeys(currentMonkey).op(monkeys(currentMonkey).items.head)
+      val worry = monkeys(currentMonkey).op(monkeys(currentMonkey).items.head) % universalDivisor
       val targetMonkey = if (worry % monkeys(currentMonkey).divisor == 0) monkeys(currentMonkey).trueTarget else monkeys(currentMonkey).falseTarget
 
       val newSituation = monkeys.concat(List(
         currentMonkey -> monkeys(currentMonkey).copy(items=monkeys(currentMonkey).items.tail, activity=monkeys(currentMonkey).activity+1),
         targetMonkey -> monkeys.get(targetMonkey).map(m => m.copy(items=m.items.appended(worry))).get))
-      playTurn(currentMonkey, newSituation)
+      playTurn(currentMonkey, newSituation, universalDivisor)
     }
 }
