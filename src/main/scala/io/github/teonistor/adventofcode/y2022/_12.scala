@@ -9,14 +9,18 @@ object _12 extends AdventOfCodeSolution[Int] {
 
   def _1(input: String): Int = {
     val chart = input.split("\n")
-    val start = findLetter(chart, 'S')
-//    val end = findLetter(chart, 'E')
+//    val start = findLetter(chart, 'S')
+    val end = findLetter(chart, 'E')
 
-    navigate(ij => chart.lift(ij._1).flatMap(_.lift(ij._2)), Map(start -> 0), Queue(start))
+    navigate(ij => chart.lift(ij._1).flatMap(_.lift(ij._2)), 'S', Map(end -> 0), Queue(end))
   }
 
-  def _2(input: String): Int =
-    1
+  def _2(input: String): Int = {
+    val chart = input.split("\n")
+    val end = findLetter(chart, 'E')
+
+    navigate(ij => chart.lift(ij._1).flatMap(_.lift(ij._2)), 'a', Map(end -> 0), Queue(end))
+  }
 
   private def findLetter(chart: Array[String], letter: Char) =
     chart.indices.flatMap(i =>
@@ -27,22 +31,21 @@ object _12 extends AdventOfCodeSolution[Int] {
 
   @tailrec
   private def navigate(chart: ((Int, Int)) => Option[Char],
-                       dist: Map[(Int, Int), Int],
+                       target: Char,
+                       steps: Map[(Int, Int), Int],
                        queue: Queue[(Int, Int)]): Int = {
     val current = queue.head
-    if (chart(current).get == 'E')
-      dist(current)
+    if (chart(current).get == target)
+      steps(current)
     else {
       val next = (udlr _ tupled current)
-        .filterNot(dist.contains)
+        .filterNot(steps.contains)
         .filter(ij => {
           val c = chart(ij)
           c.exists(canNavigate(chart(current).get, _))
         })
 
-      navigate(chart,
-        dist concat next.map((_, dist(current) + 1)),
-        queue.tail concat next)
+      navigate(chart, target, steps concat next.map((_, steps(current) + 1)), queue.tail concat next)
     }
   }
 
@@ -53,6 +56,6 @@ object _12 extends AdventOfCodeSolution[Int] {
     (i, j - 1))
 
   private def canNavigate(from:Char, to:Char) =
-    (if (from == 'S') 'a' else from) -
-      (if (to == 'E') 'z' else to) > -2
+    (if (from == 'E') 'z' else from) -
+      (if (to == 'S') 'a' else to) < 2
 }
