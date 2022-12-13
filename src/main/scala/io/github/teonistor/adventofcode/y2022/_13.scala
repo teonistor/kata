@@ -13,22 +13,35 @@ object _13 extends AdventOfCodeSolution[Int] {
       |(?<NUMBER>\d+)
       |""".stripMargin.strip.replace('\n', '|').r
 
-  def _1(input: String): Int = {
+  def _1(input: String): Int =
     input.split("\n\n").to(LazyList)
       .map(_.split("\n")
       .map(parse))
       .zipWithIndex
-      .filter(pair => correctlyOrdered(pair._1(0), pair._1(1)) == 1)
+      .filter(pair => compare(pair._1(0), pair._1(1)) == -1)
+      // This puzzle is 1-indexed
       .map(_._2 + 1)
       .sum
+
+  override def _2(input: String): Int = {
+    val dividers = List(
+      List(List(2)),
+      List(List(6)))
+    val packets = input.split("\n+").toList
+      .map(parse)
+      .prependedAll(dividers)
+      .sortWith(compare(_, _) == -1)
+
+    dividers.map(packets.indexOf)
+      // This puzzle is 1-indexed
+      .map(_+1)
+      .product
   }
 
-  override def _2(input: String): Int = ???
-
-  private def parse(row: String) = {
-    val iterator = language.findAllMatchIn(row)
-    doParse(iterator)
-  }
+  private def parse(row: String) =
+    doParse(language.findAllMatchIn(row))
+      // If you look closely, our code encloses the result in one extra list
+      .head.asInstanceOf[List[Any]]
 
   private def doParse(iterator:Iterator[Match], list:List[Any] = List.empty): List[Any] = {
     if (!iterator.hasNext)
@@ -45,35 +58,25 @@ object _13 extends AdventOfCodeSolution[Int] {
       doParse(iterator, list)
   }
 
-  private def correctlyOrdered(left: List[Any], right: List[Any]): Int = {
-//    println(left)
-//    println(right)
-//    println("---------------------")
-
+  private def compare(left: List[Any], right: List[Any]): Int =
     (left, right) match {
-      case (Nil, _::_) => myDebug(1, "the first list is empty and the second one isn't")
+      case (Nil, _::_) => -1
       case (Nil, Nil) => 0
-      case (_::_, Nil) => myDebug(-1, "the first list is not empty and the second one is")
+      case (_::_, Nil) => 1
       case (leftHead::leftTail, rightHead::rightTail) =>
         val innerComp = leftHead match {
-          case a:Int => rightHead match {
-            case b: Int => myDebug(Integer.compare(b, a), "we compared integers")
-            case b: List[Any] => correctlyOrdered(List(a), b)
+          case left: Int => rightHead match {
+            case right: Int => Integer.compare(left, right)
+            case right: List[Any] => compare(List(left), right)
           }
-          case a:List[Any] => rightHead match {
-            case b: Int => correctlyOrdered(a, List(b))
-            case b: List[Any] => correctlyOrdered(a, b)
+          case left: List[Any] => rightHead match {
+            case right: Int => compare(left, List(right))
+            case right: List[Any] => compare(left, right)
           }
         }
         if (innerComp == 0)
-          correctlyOrdered(leftTail, rightTail)
+          compare(leftTail, rightTail)
         else
           innerComp
     }
-  }
-
-  def myDebug(v:Int, because:String)= {
-//    println(s"$v because $because")
-    v
-  }
 }
