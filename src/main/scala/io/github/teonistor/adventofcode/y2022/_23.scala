@@ -8,24 +8,18 @@ object _23 extends AdventOfCodeSolution[Int] {
 
   private type MoveSet = (((Int, Int)) => (Int, Int), ((Int, Int)) => Set[(Int, Int)])
 
-  def _1(input: String): Int = {
-
-    val occupied = input.split("\n").to(LazyList)
-      .zipWithIndex
-      .flatMap(si => si._1.zipWithIndex
-        .filter(cj => cj._1 == '#')
-        .map(cj => (si._2, cj._2)))
-      .toSet
-
-    val moves = LazyList[MoveSet](
+  private val startingMoves = {
+    // Don't inline, because we don't want to recompute all these lambda call sites all the time
+    val movesOnce = List[MoveSet](
       (p => (p._1 - 1, p._2), p => Set((p._1 - 1, p._2 - 1), (p._1 - 1, p._2), (p._1 - 1, p._2 + 1))),
       (p => (p._1 + 1, p._2), p => Set((p._1 + 1, p._2 - 1), (p._1 + 1, p._2), (p._1 + 1, p._2 + 1))),
       (p => (p._1, p._2 - 1), p => Set((p._1 - 1, p._2 - 1), (p._1, p._2 - 1), (p._1 + 1, p._2 - 1))),
       (p => (p._1, p._2 + 1), p => Set((p._1 - 1, p._2 + 1), (p._1, p._2 + 1), (p._1 + 1, p._2 + 1))))
-    val m= LazyList.continually(moves).flatten
-    val finalPlacement = move(m, occupied, Some(10))._2
+    LazyList.continually(movesOnce).flatten
+  }
 
-    println(s"Started with ${occupied.size}, ended with ${finalPlacement.size}")
+  def _1(input: String): Int = {
+    val finalPlacement = solve(input, Some(10))._2
 
     val minI = finalPlacement.map(_._1).min
     val maxI = finalPlacement.map(_._1).max
@@ -35,8 +29,13 @@ object _23 extends AdventOfCodeSolution[Int] {
     (maxI - minI + 1) * (maxJ - minJ + 1) - finalPlacement.size
   }
 
-  def _2(input: String): Int = {
+  def _2(input: String): Int =
+    solve(input)._1
 
+  /**
+   * @return The count of rounds played and the set of occupied positions at the end
+   */
+  private def solve(input: String, roundLimit: Option[Int] = None) = {
     val occupied = input.split("\n").to(LazyList)
       .zipWithIndex
       .flatMap(si => si._1.zipWithIndex
@@ -44,54 +43,31 @@ object _23 extends AdventOfCodeSolution[Int] {
         .map(cj => (si._2, cj._2)))
       .toSet
 
-    val moves = LazyList[MoveSet](
-      (p => (p._1 - 1, p._2), p => Set((p._1 - 1, p._2 - 1), (p._1 - 1, p._2), (p._1 - 1, p._2 + 1))),
-      (p => (p._1 + 1, p._2), p => Set((p._1 + 1, p._2 - 1), (p._1 + 1, p._2), (p._1 + 1, p._2 + 1))),
-      (p => (p._1, p._2 - 1), p => Set((p._1 - 1, p._2 - 1), (p._1, p._2 - 1), (p._1 + 1, p._2 - 1))),
-      (p => (p._1, p._2 + 1), p => Set((p._1 - 1, p._2 + 1), (p._1, p._2 + 1), (p._1 + 1, p._2 + 1))))
-    val m = LazyList.continually(moves).flatten
-    val finalPlacement = move(m, occupied)._1
-    finalPlacement
-
-//    println(s"Started with ${occupied.size}, ended with ${finalPlacement.size}")
-//
-//    val minI = finalPlacement.map(_._1).min
-//    val maxI = finalPlacement.map(_._1).max
-//    val minJ = finalPlacement.map(_._2).min
-//    val maxJ = finalPlacement.map(_._2).max
-//
-//    (maxI - minI + 1) * (maxJ - minJ + 1) - finalPlacement.size
+    move(startingMoves, occupied, roundLimit)
   }
 
   @tailrec
-  private def move(moves: LazyList[MoveSet], occupied: Set[(Int, Int)], roundLimit: Option[Int] = None, rounds: Int = 1): (Int,Set[(Int, Int)]) = {
-//    println(occupied)
+  private def move(moves: LazyList[MoveSet], occupied: Set[(Int, Int)], roundLimit: Option[Int], rounds: Int = 1): (Int, Set[(Int, Int)]) = {
     if (roundLimit.exists(_ < rounds))
-      return (rounds,occupied)
+      return (rounds, occupied)
 
-    val occupiedByNeedToMove = occupied.groupBy(p =>
-      (surroundings _).tupled(p).exists(occupied.contains))
+    val occupiedByNeedToMove = occupied.groupBy((surroundings _).tupled(_).exists(occupied.contains))
+    if (occupiedByNeedToMove contains true) {
 
-    if (occupiedByNeedToMove.contains(true)) {
-//      moves.take(4).map(_._2((1,1))).foreach(println)
-//      println()
-
-      val needsToMoveByWhere = occupiedByNeedToMove(true).groupBy(p => moves.take(4)
-        .find(!_._2(p).exists(occupied.contains))
-        .map(_._1(p)))
-
-//      println(s"NtMbW:$needsToMoveByWhere")
-
-      val havingMoved = needsToMoveByWhere.to(LazyList).flatMap {
-        case (None, unmoved) => unmoved
-        case (_, conflicting) if conflicting.size > 1 => conflicting
-        case (unique, _) => unique
-      }
+      val havingMoved = occupiedByNeedToMove(true)
+        .groupBy(p => moves.take(4)
+          .find(!_._2(p).exists(occupied.contains))
+          .map(_._1(p)))
+        .to(LazyList).flatMap {
+          case (None, unmoved) => unmoved
+          case (_, conflicting) if conflicting.size > 1 => conflicting
+          case (unique, _) => unique
+        }
 
       move(moves.tail, occupiedByNeedToMove.getOrElse(false, Set.empty) ++ havingMoved, roundLimit, rounds + 1)
 
     } else
-      (rounds,occupied)
+      (rounds, occupied)
   }
 
   private def surroundings(i: Int, j: Int) = Set(
