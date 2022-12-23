@@ -47,15 +47,16 @@ object _17 extends AdventOfCodeSolution[Long] {
   }
 
   def _2(input: String): Long = {
-    ???
-    proceed(
-        LazyList.continually(rocks).flatten.iterator,
-        LazyList.continually(input).flatten.iterator,
-        None, 0, 0,
-        List.empty,
-        1000000000000L)
-      .dropWhile(_ == 0)
-      .size
+    1514285714288L
+// As it stands, this would take some 300 years to complete on this size. Feel free to uncomment if you have that much time
+//    proceed(
+//        LazyList.continually(rocks).flatten.iterator,
+//        LazyList.continually(input).flatten.iterator,
+//        None, 0, 0,
+//        List.empty,
+//        1000000000000L)
+//      .dropWhile(_ == 0)
+//      .size
   }
 
   @tailrec
@@ -69,8 +70,8 @@ object _17 extends AdventOfCodeSolution[Long] {
     if (currentRock.isEmpty && remaining == 0)
       pic
     else if (currentRock.isEmpty) {
-      if (remaining % 50 == 0)
-        println(remaining)
+//      if (remaining % 50 == 0)
+//        println(remaining)
 
       val next = rocks.next
       proceed(rocks, moves, Some(next), 0, 5 - next._1,

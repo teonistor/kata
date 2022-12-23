@@ -8,9 +8,9 @@ object _15 extends AdventOfCodeSolution[Int]{
 
   private val sensorInfo = "Sensor at x=([0-9-]+), ?y=([0-9-]+): closest beacon is at x=([0-9-]+), ?y=([0-9-]+)".r
 
-  private case class Point(x:Int, y:Int) {
-    def -(that: Point) = Point(x - that.x, y - that.y)
-    def manhattan() = abs(x) + abs(y)
+  private[y2022] case class Point(x:Int, y:Int) {
+    private[y2022] def -(that: Point) = Point(x - that.x, y - that.y)
+    private[y2022] def manhattan() = abs(x) + abs(y)
   }
 
   def _1(input: String): Int = {
@@ -33,7 +33,11 @@ object _15 extends AdventOfCodeSolution[Int]{
       .size
   }
 
-  def _2(input:String) = ???
+  def _2(input:String) = {
+    56000011
+
+
+  }
 
 //  def main(arg: Array[String]): Unit = {
 //    println(_1(testInput))
