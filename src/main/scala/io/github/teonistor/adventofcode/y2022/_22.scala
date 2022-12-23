@@ -1,6 +1,7 @@
 package io.github.teonistor.adventofcode.y2022
 
 import io.github.teonistor.adventofcode.AdventOfCodeSolution
+import org.apache.commons.lang3.StringUtils.rightPad
 
 import scala.annotation.tailrec
 
@@ -8,68 +9,34 @@ object _22 extends AdventOfCodeSolution[Int] {
 
   private val instruction = "(\\d+)|([LR])".r
 
-  private case class Composure(
+  private[y2022] case class Situation(
       height: Int, width: Int,
       i: Int, j: Int,
       rot: Int = 0) {
 
-    def move() = rot match {
+    private[y2022] def move() = rot match {
       case 0 => copy(j = j + 1)
       case 1 => copy(i = i + 1)
       case 2 => copy(j = j - 1)
       case 3 => copy(i = i - 1)
     }
 
-    def safeMove() = rot match {
+    private[y2022] def safeMove() = rot match {
       case 0 => copy(j = (j + 1) % width)
       case 1 => copy(i = (i + 1) % height)
       case 2 => copy(j = (j - 1 + width) % width)
       case 3 => copy(i = (i - 1 + height) % height)
     }
 
-    def left() = copy(rot = (rot + 3) % 4)
-    def right() = copy (rot = (rot + 1) % 4)
+    private[y2022] def turnLeft() = copy(rot = (rot + 3) % 4)
+    private[y2022] def turnRight() = copy (rot = (rot + 1) % 4)
   }
 
-  def _1(input: String): Int = {
-    val inputParts = input.split("\n\n")
-    val map = {
-      val temp = inputParts(0).split("\n")
-      val width = temp.map(_.length).max
-      temp.map(line => Array.tabulate(width)(line.lift(_).getOrElse(' ')))
-    }
-    val instructions = instruction.findAllMatchIn(inputParts(1)).to(LazyList)
-      .map(m => (m.group(1), m.group(2)))
-      .map[Either[Int, Composure=>Composure]] {
-        case (n, null) => Left(n.toInt)
-        case (null, "L") => Right(_.left())
-        case (null, "R") => Right(_.right())
-      }
+  def _1(input: String): Int =
+    solve(input, None)
 
-    @tailrec
-    def thing(instructions: Seq[Either[Int, Composure=>Composure]], c: Composure): Composure = {
-      println(s"${c.i}, ${c.j}")
-
-      if (instructions.isEmpty)
-        c
-      else instructions.head match {
-        case Left(0) => thing(instructions.tail, c)
-        case Left(n) =>
-          val oneStep = LazyList.iterate(c.safeMove())(_.safeMove())
-            .find(oneStep => map(oneStep.i)(oneStep.j) != ' ').get
-          map(oneStep.i)(oneStep.j) match {
-            case '.' => thing(Left(n - 1) +: instructions.tail, oneStep)
-            case '#' => thing(instructions.tail, c)
-          }
-        case Right(op) => thing(instructions.tail, op(c))
-
-      }
-    }
-    val end = thing(instructions, Composure(map.length, map(0).length, 0, map(0).indices.find(map(0)(_) != ' ').get))
-    println(end)
-
-    (end.i + 1) * 1000 + (end.j + 1) * 4 + end.rot
-  }
+  def _2(input: String): Int =
+    solve(input, Some(if (input.length < 250) lookupWarpSmall else lookupWarpLarge))
 
   private def lookupWarpSmall(i: Int, j: Int, rot: Int) =
     (rot, i / 4, j / 4) match {
@@ -90,7 +57,7 @@ object _22 extends AdventOfCodeSolution[Int] {
     }
 
   // This is specific to my input. Good enough for the demo :P
-  def lookupWarpLarge(i: Int, j: Int, rot: Int) =
+  private def lookupWarpLarge(i: Int, j: Int, rot: Int) =
     (rot, i / 50, j / 50) match {
       case (0, 0, _) => (149 - i, 99, 2)
       case (0, 1, _) => (49, i + 50, 3)
@@ -108,54 +75,63 @@ object _22 extends AdventOfCodeSolution[Int] {
       case (3, _, 2) => (199, j - 100, 3)
     }
 
-  def _2(input: String): Int = {
-
-    val inputParts = input.split("\n\n")
-    val map = {
-      val temp = inputParts(0).split("\n")
-      val width = temp.map(_.length).max
-      temp.map(line => Array.tabulate(width)(line.lift(_).getOrElse(' ')))
-    }
-    val instructions = instruction.findAllMatchIn(inputParts(1)).to(LazyList)
-      .map(m => (m.group(1), m.group(2)))
-      .map[Either[Int, Composure => Composure]] {
-        case (n, null) => Left(n.toInt)
-        case (null, "L") => Right(_.left())
-        case (null, "R") => Right(_.right())
-      }
-
-    val lookupWarp = if (input.length < 250) lookupWarpSmall _ else lookupWarpLarge _
+  private def solve(input: String, lookupWarp: Option[(Int, Int, Int) => (Int, Int, Int)]): Int = {
+    val (chart, instructions) = parseInput(input.split("\n\n"))
 
     @tailrec
-    def thing(instructions: Seq[Either[Int, Composure => Composure]], c: Composure): Composure = {
-      println(s"${c.i}, ${c.j}")
+    def traversePath(instructions: Seq[Either[Int, Situation => Situation]], current: Situation): Situation =
+      (instructions.headOption, lookupWarp) match {
+        case (None, _) => current
+        case (Some(Left(0)), _) => traversePath(instructions.tail, current)
 
-      if (instructions.isEmpty)
-        c
-      else instructions.head match {
-        case Left(0) => thing(instructions.tail, c)
-        case Left(n) =>
-          val oneStep = c.move()
-          map.lift(oneStep.i)
-            .flatMap(_.lift(oneStep.j)) match {
-              case Some('.') => thing(Left(n - 1) +: instructions.tail, oneStep)
-              case Some('#') => thing(instructions.tail, c)
-              case _ =>
-                val (warpedI, warpedJ, warpedRot) = lookupWarp(oneStep.i, oneStep.j, oneStep.rot)
-                println(s"i=$warpedI, j=$warpedJ, rot=$warpedRot")
-                map(warpedI)(warpedJ) match {
-                  case '.' => thing(Left(n - 1) +: instructions.tail, c.copy(i = warpedI, j = warpedJ, rot = warpedRot))
-                  case '#' => thing(instructions.tail, c)
-                }
+        // For part 1, keep going in the same direction until you get out of the void
+        case (Some(Left(n)), None) =>
+          val next = LazyList.iterate(current)(_.safeMove()).tail
+            .find(oneStep => chart(oneStep.i)(oneStep.j) != ' ').get
+          chart(next.i)(next.j) match {
+            case '.' => traversePath(Left(n - 1) +: instructions.tail, next)
+            case '#' => traversePath(instructions.tail, current)
           }
-        case Right(op) => thing(instructions.tail, op(c))
 
+        // For part 2, use the lookups to get out of the void
+        case (Some(Left(n)), Some(lookup)) =>
+          val next = current.move()
+          chart.lift(next.i)
+            .flatMap(_.lift(next.j)) match {
+              case Some('.') => traversePath(Left(n - 1) +: instructions.tail, next)
+              case Some('#') => traversePath(instructions.tail, current)
+              case _ =>
+                val (warpedI, warpedJ, warpedRot) = lookup(next.i, next.j, next.rot)
+                chart(warpedI)(warpedJ) match {
+                  case '.' => traversePath(Left(n - 1) +: instructions.tail, current.copy(i = warpedI, j = warpedJ, rot = warpedRot))
+                  case '#' => traversePath(instructions.tail, current)
+                }
+            }
+
+        case (Some(Right(op)), _) => traversePath(instructions.tail, op(current))
       }
-    }
 
-    val end = thing(instructions, Composure(map.length, map(0).length, 0, map(0).indices.find(map(0)(_) != ' ').get))
-    println(end)
+    finalise(traversePath(
+      instructions,
+      Situation(chart.length, chart(0).length, 0, chart(0).indices.find(chart(0)(_) != ' ').get)))
+  }
 
+  private def parseInput(input: Array[String]) = {
+    val lines = input(0).split("\n")
+    val width = lines.map(_.length).max
+
+    ( lines.map(rightPad(_, width)),
+      instruction.findAllMatchIn(input(1)).to(LazyList)
+        .map(m => (m.group(1), m.group(2)))
+        .map[Either[Int, Situation => Situation]] {
+          case (n, null) => Left(n.toInt)
+          case (null, "L") => Right(_.turnLeft())
+          case (null, "R") => Right(_.turnRight())
+        })
+  }
+
+  private def finalise(end: Situation) = {
+    // In the problem statement, the chart is 1-indexed but the rotations are 0-indexed
     (end.i + 1) * 1000 + (end.j + 1) * 4 + end.rot
   }
 }
