@@ -9,80 +9,41 @@ object _21 extends AdventOfCodeSolution[Long] {
   private val nodeMonkey = "([a-z]{4}): ([a-z]{4}) (.) ([a-z]{4})".r
 
   def _1(input: String): Long = {
-    val monkeys = input.split("\n").to(LazyList).map {
-      case leafMonkey(name, number) => Left((name, number.toLong))
-      case nodeMonkey(name, lhs, "+", rhs) => Right((name, ((_:Long) + (_:Long), lhs, rhs)))
-      case nodeMonkey(name, lhs, "-", rhs) => Right((name, ((_:Long) - (_:Long), lhs, rhs)))
-      case nodeMonkey(name, lhs, "*", rhs) => Right((name, ((_:Long) * (_:Long), lhs, rhs)))
-      case nodeMonkey(name, lhs, "/", rhs) => Right((name, ((_:Long) / (_:Long), lhs, rhs)))
-    }
+    val (memo, oper) = parseInput(input)
 
-    val memo = monkeys
-      .filter(_.isLeft)
-      .map(_.swap.getOrElse(null))
-      .to(mutable.Map)
-    val oper = monkeys
-      .filter(_.isRight)
-      .map(_.getOrElse(null))
-      .toMap
-
-    def doThing(monkey: String): Long =
-      if (memo.contains(monkey))
+    def recu(monkey: String): Long =
+      if (memo contains monkey)
         memo(monkey)
       else {
-        val (op, lhs, rhs) = oper(monkey)
-        val result = op(doThing(lhs), doThing(rhs))
+        val (op,_,_, lhs, rhs) = oper(monkey)
+        val result = op(recu(lhs), recu(rhs))
         memo.put(monkey, result)
         result
       }
 
-    doThing("root")
-
-    // 1425736276 too low
+    recu("root")
   }
 
   def _2(input: String): Long = {
-    type L = (String, Long)
-    type R = (String, ((Long,Long) => Long, (Long,Long) => Long, (Long,Long) => Long, String, String))
+    val (memo, oper) = parseInput(input)
 
-    val monkeys = input.split("\n").to(LazyList).map {
-      case leafMonkey(name, number) => Left((name, number.toLong))
-      case nodeMonkey(name, lhs, "+", rhs) => Right[L,R]((name, (_+_, _-_, _-_, lhs, rhs)))
-      case nodeMonkey(name, lhs, "-", rhs) => Right[L,R]((name, (_-_, _+_, -_+_, lhs, rhs)))
-      case nodeMonkey(name, lhs, "*", rhs) => Right[L,R]((name, (_*_, _/_, _/_, lhs, rhs)))
-      case nodeMonkey(name, lhs, "/", rhs) => Right[L,R]((name, (_/_, _*_, (r,l) => l/r, lhs, rhs)))
-    }
-
-    val memo = monkeys
-      .filter(_.isLeft)
-      .map(_.swap.getOrElse(null))
-      .to(mutable.Map)
-    val oper = monkeys
-      .filter(_.isRight)
-      .map(_.getOrElse(null))
-      .toMap
-
-    def doThing(monkey: String): Either[Long, Long=>Long] = {
+    def recu(monkey: String): Either[Long, Long=>Long] = {
       if (monkey == "humn")
         Right(identity)
-      else if (memo.contains(monkey))
+      else if (memo contains monkey)
         Left(memo(monkey))
       else {
         val (straightOp, leftOp, rightOp, lhs, rhs) = oper(monkey)
-        val leftResult = doThing(lhs)
-        val rightResult = doThing(rhs)
+        val leftResult = recu(lhs)
+        val rightResult = recu(rhs)
 
-        if (leftResult.isRight) {
-          leftResult.map(func => func.compose(r => leftOp(r, rightResult.swap.getOrElse(1))))
-
-        } else if (rightResult.isRight) {
-          rightResult.map(func => func.compose(r => rightOp(r, leftResult.swap.getOrElse(1))))
-
-        } else {
-
-          val result = straightOp(leftResult.swap.getOrElse(1), rightResult.swap.getOrElse(1))
-          memo.put(monkey, result)
-          Left(result)
+        (leftResult, rightResult) match {
+          case (Right(func), Left(num)) => Right(func.compose(leftOp(_, num)))
+          case (Left(num), Right(func)) => Right(func.compose(rightOp(_, num)))
+          case (Left(leftNum), Left(rightNum)) =>
+            val result = straightOp(leftNum, rightNum)
+            memo.put(monkey, result)
+            Left(result)
         }
       }
     }
@@ -90,12 +51,33 @@ object _21 extends AdventOfCodeSolution[Long] {
     val subtrees = oper.view
       .filterKeys(_ == "root")
       .values.flatMap(m => List(m._4, m._5))
-      .map(doThing)
+      .map(recu)
 
-    val monkeySide = subtrees.find(_.isLeft).flatMap(_.swap.toOption).get
-    val humanSide = subtrees.find(_.isRight).flatMap(_.toOption).get
-    println(monkeySide)
+    (subtrees.head, subtrees.tail.head) match {
+      case (Right(func), Left(num)) => func(num)
+      case (Left(num), Right(func)) => func(num)
+    }
+  }
 
-    humanSide(monkeySide)
+  private def parseInput(input:String) = {
+    type L = (String, Long)
+    type R = (String, ((Long, Long) => Long, (Long, Long) => Long, (Long, Long) => Long, String, String))
+
+    val monkeys = input.split("\n").to(LazyList).map {
+      case leafMonkey(name, number) => Left((name, number.toLong))
+      case nodeMonkey(name, lhs, "+", rhs) => Right[L,R] ((name, (_+_, _-_, _-_, lhs, rhs)))
+      case nodeMonkey(name, lhs, "-", rhs) => Right[L,R] ((name, (_-_, _+_, -_+_, lhs, rhs)))
+      case nodeMonkey(name, lhs, "*", rhs) => Right[L,R] ((name, (_*_, _/_, _/_, lhs, rhs)))
+      case nodeMonkey(name, lhs, "/", rhs) => Right[L,R] ((name, (_/_, _*_, (r,l) => l/r, lhs, rhs)))
+    }
+
+    ( monkeys.flatMap {
+        case Left(t) => Some(t)
+        case _=> None
+      }.to(mutable.Map),
+      monkeys.flatMap {
+        case Right(t) => Some(t)
+        case _=> None
+      }.toMap)
   }
 }
