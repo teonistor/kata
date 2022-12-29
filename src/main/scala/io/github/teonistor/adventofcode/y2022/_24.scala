@@ -3,9 +3,7 @@ package io.github.teonistor.adventofcode.y2022
 import io.github.teonistor.adventofcode.AdventOfCodeSolution
 
 import scala.annotation.tailrec
-import scala.collection.convert.ImplicitConversions.`mutableMap AsJavaMap`
 import scala.collection.immutable.Queue
-import scala.collection.mutable
 
 object _24 extends AdventOfCodeSolution[Int] {
 
@@ -15,97 +13,51 @@ object _24 extends AdventOfCodeSolution[Int] {
   }
 
   // 11 s
-  def _1(input: String): Int = {
+  def _1(input: String): Int =
+    solve(input)((start, finish, solver) =>
+      solver(0, start, finish))
 
+  // 40 s
+  def _2(input: String): Int =
+    solve(input)((start, finish, solver) =>
+      solver(solver(solver(0, start, finish), finish, start), start, finish))
+
+  private def solve[A](input: String)(continuation: ((Int, Int), (Int, Int), (Int, (Int, Int), (Int, Int)) => Int) => A) = {
     val chart = input.split("\n")
-
-    val start = (0, chart(0).indices.find(chart(0)(_) == '.').get)
-    val finish = (chart.length-1, chart.last.indices.find(chart.last(_) == '.').get)
-
-    val blizz = (1 to chart.length - 2).flatMap(i =>
-      (1 to chart(i).length - 2).flatMap(j =>
-        chart(i)(j) match {
-          case '.' => None
-          case '<' => Some(Bliz(i, j, identity, ensure(noLower, chart(0).length).compose(_ - 1)))
-          case '>' => Some(Bliz(i, j, identity, ensure(noHigher, chart(0).length).compose(_ + 1)))
-          case 'v' => Some(Bliz(i, j, ensure(noHigher, chart.length).compose(_ + 1), identity))
-          case '^' => Some(Bliz(i, j, ensure(noLower, chart.length).compose(_ - 1), identity))
-        }))
-
-    val blizzBySteps = mutable.Map(0 -> blizz)
-
-    @tailrec
-    def recu(q: Queue[((Int, Int), Int)]): Int = {
-      val (position, steps) = q.head
-      if (steps % 18 == 0)
-        println(position + "   " + steps)
-
-      if (position == finish)
-        steps
-      else {
-        // Mod lcm(width, height) because after that blizzards are guaranteed to repeat
-        lazy val nextBlizz = blizzBySteps.computeIfAbsent((steps+1) % 600, _=> blizzBySteps(steps).map(_.move()))
-
-        val nextPos = (neighboursAndSelf _).tupled(position)
-          .filter(_._1 >= 0)
-          .filter(p => chart(p._1)(p._2) != '#')
-          .filterNot(p => nextBlizz.exists(b => b.i == p._1 && b.j == p._2))
-        recu(q.tail.appendedAll(nextPos.map((_, steps + 1))).distinct)
-
-      }
-    }
-
-    recu(Queue((start, 0)))
-  }
-
-  def _2(input: String): Int = {
-    // 43 s
-    // 822 too low; worth a shot ;)
-  {
-
-    val chart = input.split("\n")
-
     val start = (0, chart(0).indices.find(chart(0)(_) == '.').get)
     val finish = (chart.length - 1, chart.last.indices.find(chart.last(_) == '.').get)
 
-    val blizz = (1 to chart.length - 2).flatMap(i =>
+    val startingBlizz = (1 to chart.length - 2).flatMap(i =>
       (1 to chart(i).length - 2).flatMap(j =>
         chart(i)(j) match {
           case '.' => None
-          case '<' => Some(Bliz(i, j, identity, ensure(noLower, chart(0).length).compose(_ - 1)))
-          case '>' => Some(Bliz(i, j, identity, ensure(noHigher, chart(0).length).compose(_ + 1)))
-          case 'v' => Some(Bliz(i, j, ensure(noHigher, chart.length).compose(_ + 1), identity))
-          case '^' => Some(Bliz(i, j, ensure(noLower, chart.length).compose(_ - 1), identity))
+          case '<' => Some(Bliz(i, j, identity, ensure(noLower,  chart(0).length).compose(_-1)))
+          case '>' => Some(Bliz(i, j, identity, ensure(noHigher, chart(0).length).compose(_+1)))
+          case 'v' => Some(Bliz(i, j, ensure(noHigher, chart.length).compose(_+1), identity))
+          case '^' => Some(Bliz(i, j, ensure(noLower,  chart.length).compose(_-1), identity))
         }))
-
-    val blizzBySteps = mutable.Map(0 -> blizz)
+    val blizzPreds = LazyList.iterate(startingBlizz)(_.map(_.move()))
+      .map(b => (pos:(Int,Int)) => !b.exists(b => b.i == pos._1 && b.j == pos._2))
 
     @tailrec
     def recu(q: Queue[((Int, Int), Int)], goal: (Int,Int)): Int = {
       val (position, steps) = q.head
-      if (steps % 18 == 0)
-        println(position + "   " + steps)
-
       if (position == goal)
         steps
-      else {
-        // Mod lcm(width, height) because after that blizzards are guaranteed to repeat
-        lazy val nextBlizz = blizzBySteps.computeIfAbsent((steps + 1) % 600, _ => blizzBySteps(steps).map(_.move()))
 
-        val nextPos = (neighboursAndSelf _).tupled(position)
-          .filter(_._1 >= 0)
-          .filterNot(_._1 >= chart.length)
-          .filter(p => chart(p._1)(p._2) != '#')
-          .filterNot(p => nextBlizz.exists(b => b.i == p._1 && b.j == p._2))
-        recu(q.tail.appendedAll(nextPos.map((_, steps + 1))).distinct, goal)
-
-      }
+      else
+        recu(q.tail.appendedAll((neighboursAndSelf _).tupled(position)
+            .filter(_._1 >= 0)
+            .filter(_._1 < chart.length)
+            .filter(pos => chart(pos._1)(pos._2) != '#')
+            // Mod lcm(width, height) because after that blizzards are guaranteed to repeat
+            .filter(blizzPreds((steps + 1) % 600))
+            .map((_, steps + 1)))
+          .distinct,
+          goal)
     }
 
-    val one = recu(Queue((start, 0)), finish)
-    val two = recu(Queue((finish, one)), start)
-    recu(Queue((start, two)), finish)
-  }
+    continuation(start, finish, (c, s, f) => recu(Queue((s, c)), f))
   }
 
   private def ensure(f: Int => Int => Int, outer: Int) = f(outer - 2)
