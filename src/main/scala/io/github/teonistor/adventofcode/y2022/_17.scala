@@ -5,6 +5,7 @@ import io.github.teonistor.adventofcode.AdventOfCodeSolution
 import java.lang.Integer.parseInt
 import java.lang.Math.{max, min}
 import scala.annotation.tailrec
+import scala.collection.mutable.ListBuffer
 
 object _17 extends AdventOfCodeSolution[Long] {
 
@@ -40,7 +41,7 @@ object _17 extends AdventOfCodeSolution[Long] {
         LazyList.continually(rocks).flatten.iterator,
         LazyList.continually(input).flatten.iterator,
         None, 0, 0,
-        List.empty,
+        ListBuffer.empty,
       2022)
       .dropWhile(_==0)
       .size
@@ -48,12 +49,12 @@ object _17 extends AdventOfCodeSolution[Long] {
 
   def _2(input: String): Long = {
     1514285714288L
-// As it stands, this would take some 300 years to complete on this size. Feel free to uncomment if you have that much time
+// As it stands, this would take some 20 years to complete on this size. Feel free to uncomment if you have that much time
     proceed(
         LazyList.continually(rocks).flatten.iterator,
         LazyList.continually(input).flatten.iterator,
         None, 0, 0,
-        List.empty,
+        ListBuffer.empty,
         1000000000000L)
       .dropWhile(_ == 0)
       .size
@@ -65,12 +66,12 @@ object _17 extends AdventOfCodeSolution[Long] {
                       currentRock:Option[(Int, List[Int])],
                       top:Int,
                       right:Int,
-                      pic:List[Int], // Prepend to add rows to the top of the picture. Bits set are rock, unset are air
-                      remaining:Long):List[Int] = {
+                      pic:ListBuffer[Int], // Prepend to add rows to the top of the picture. Bits set are rock, unset are air
+                      remaining:Long):Iterable[Int] = {
     if (currentRock.isEmpty && remaining == 0)
       pic
     else if (currentRock.isEmpty) {
-      if (remaining % 50 == 0)
+      if (remaining % 50000 == 0)
         println(remaining)
 
       val next = rocks.next
@@ -80,10 +81,16 @@ object _17 extends AdventOfCodeSolution[Long] {
     }
     else {
 
-      val newRightMaybe = moves.next match {
-        case '<' => min(right + 1, 7 - currentRock.get._1)
-        case '>' => max(right - 1, 0)
-      }
+      val newRightMaybe =
+        if (moves.next() == '<')
+          min(right + 1, 7 - currentRock.get._1)
+        else
+          max(right - 1, 0)
+
+//        moves.next match {
+//        case '<' => min(right + 1, 7 - currentRock.get._1)
+//        case '>' => max(right - 1, 0)
+//      }
       val newRight = if (hit(pic, currentRock.get._2, top, newRightMaybe)) right else newRightMaybe
 
       // Now move down
@@ -94,18 +101,23 @@ object _17 extends AdventOfCodeSolution[Long] {
     }
   }
 
-  private def hit(pic:List[Int], rock:List[Int], top:Int, right:Int) =
-    pic.drop(top).zip(rock.map(_ << right))
-      .exists(ii => (ii._1 & ii._2) > 0)
+  private def hit(pic:ListBuffer[Int], rock:List[Int], top:Int, right:Int) = {
+    rock.indices.exists(i => ((rock(i) << right) & pic(top + i)) > 0)
 
-  private def sediment(pic:List[Int], rock:List[Int], top:Int, right:Int) = {
+
+//    pic.drop(top).zip(rock.map(_ << right))
+//      .exists(ii => (ii._1 & ii._2) > 0)
+  }
+
+  private def sediment2(pic:List[Int], rock:List[Int], top:Int, right:Int) = {
     val (preRock, post) = pic.splitAt(top+rock.size)
     val (pre, at) = preRock.splitAt(top)
     post.prependedAll(pre.appendedAll(at.indices.map(i => at(i) |( rock(i)<< right))))
   }
 
-  private def sediment1(pic:List[Int], rock:List[Int], top:Int, right:Int) =
-    pic.indices.map(i => if (i < top || i >= top+rock.size) pic(i)
-        else pic(i) | (rock(i - top) << right))
-      .toList
+  private def sediment(pic:ListBuffer[Int], rock:List[Int], top:Int, right:Int) = {
+    rock.indices.foreach(i =>
+      pic.update(i + top, pic(i + top) | (rock(i) << right)))
+    pic
+  }
 }
