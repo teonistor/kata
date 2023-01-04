@@ -49,29 +49,29 @@ object _17 extends AdventOfCodeSolution[Long] {
   def _2(input: String): Long = {
     1514285714288L
 // As it stands, this would take some 300 years to complete on this size. Feel free to uncomment if you have that much time
-//    proceed(
-//        LazyList.continually(rocks).flatten.iterator,
-//        LazyList.continually(input).flatten.iterator,
-//        None, 0, 0,
-//        List.empty,
-//        1000000000000L)
-//      .dropWhile(_ == 0)
-//      .size
+    proceed(
+        LazyList.continually(rocks).flatten.iterator,
+        LazyList.continually(input).flatten.iterator,
+        None, 0, 0,
+        List.empty,
+        1000000000000L)
+      .dropWhile(_ == 0)
+      .size
   }
 
   @tailrec
-  def proceed(rocks:Iterator[(Int, List[Int])],
-              moves:Iterator[Char],
-              currentRock:Option[(Int, List[Int])],
-              top:Int,
-              right:Int,
-              pic:List[Int], // Prepend to add rows to the top of the picture. Bits set are rock, unset are air
-              remaining:Long):List[Int] = {
+  private def proceed(rocks:Iterator[(Int, List[Int])],
+                      moves:Iterator[Char],
+                      currentRock:Option[(Int, List[Int])],
+                      top:Int,
+                      right:Int,
+                      pic:List[Int], // Prepend to add rows to the top of the picture. Bits set are rock, unset are air
+                      remaining:Long):List[Int] = {
     if (currentRock.isEmpty && remaining == 0)
       pic
     else if (currentRock.isEmpty) {
-//      if (remaining % 50 == 0)
-//        println(remaining)
+      if (remaining % 50 == 0)
+        println(remaining)
 
       val next = rocks.next
       proceed(rocks, moves, Some(next), 0, 5 - next._1,
@@ -98,7 +98,13 @@ object _17 extends AdventOfCodeSolution[Long] {
     pic.drop(top).zip(rock.map(_ << right))
       .exists(ii => (ii._1 & ii._2) > 0)
 
-  private def sediment(pic:List[Int], rock:List[Int], top:Int, right:Int) =
+  private def sediment(pic:List[Int], rock:List[Int], top:Int, right:Int) = {
+    val (preRock, post) = pic.splitAt(top+rock.size)
+    val (pre, at) = preRock.splitAt(top)
+    post.prependedAll(pre.appendedAll(at.indices.map(i => at(i) |( rock(i)<< right))))
+  }
+
+  private def sediment1(pic:List[Int], rock:List[Int], top:Int, right:Int) =
     pic.indices.map(i => if (i < top || i >= top+rock.size) pic(i)
         else pic(i) | (rock(i - top) << right))
       .toList
