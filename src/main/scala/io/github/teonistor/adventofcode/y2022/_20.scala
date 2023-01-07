@@ -28,30 +28,7 @@ object _20 extends AdventOfCodeSolution[Long] {
       temp.head.previous = temp.last
       temp
     }
-//    private var current = nodes(seq(0))
 
-
-    def ensureRange(i: Int): Int =
-      (i + size) % size
-
-//    def iterateFrom(origin: Int): LazyList[Int] =
-//      LazyList.iterate(nodes(origin))(_.next).map(_.value)
-//
-//    def getCurrentAndFour: (Int, Set[Int]) =
-//      (current.value, HashSet.iterate(current, 4)(_.next).map(_.value))
-//
-//    /**
-//     * Rotate the current pointer once along
-//     */
-//    def advance() {
-//      current = current.next
-//    }
-
-//    /**
-//     * Move the 3 elements from after the current one to after the given element
-//     *
-//     * @param to Element value after which to put the 3 elements
-//     */
     def displace(node:MutableNode, by:Int): Unit = {
       node.next.previous = node.previous
       node.previous.next = node.next
@@ -61,85 +38,32 @@ object _20 extends AdventOfCodeSolution[Long] {
       node.next = to.next
       to.next = node
       node.next.previous = node
-
-
-//      val displaced = current.next
-//      current.next = displaced.next.next.next
-//
-//      displaced.next.next.next = nodes(to).next
-//      nodes(to).next = displaced
     }
-
-    override def toString: String =
-      LazyList.iterate(nodes.head.next)(_.next).takeWhile(_ != nodes.head).prepended(nodes.head).map(_.value).mkString("[", " ", "]")
   }
 
+  def _1(input: String): Long =
+    solve(input, 1, 1)
 
-  def _1(input: String): Long = {
-    val circle = new MutableCircle(input.split("\n").map(_.toLong))
-    var zero: circle.MutableNode = null
-
-    circle.nodes.foreach(n => {
-      if (n.value == 0)
-        zero = n
-
-      else if (n.value < 0)
-        circle.displace(n, circle.size - 1 - ((-n.value) % (circle.size - 1)).toInt)
-      else
-        circle.displace(n, (n.value % (circle.size - 1)).toInt)
-    })
-
-    LazyList(1000, 2000, 3000)
-      .map(zero.jump(_))
-      .map(_.value)
-      .sum
-
-//    ???
-    // 1883 too low
-    // 16493 too high
-    // 9866 correct
-  }
-
-  def _2(input: String): Long = {
-    val multiplier = 811589153L
-    val howManyRepetitions = 10
-
-    solve(input, multiplier, howManyRepetitions)
-  }
+  def _2(input: String): Long =
+    solve(input, 811589153L, 10)
 
   private def solve(input: String, multiplier: Long, howManyRepetitions: Int) = {
-
     val circle = new MutableCircle(input.split("\n").map(_.toLong * multiplier))
     var zero: circle.MutableNode = null
 
-
-    (1 to howManyRepetitions).flatMap(_ => {
-      circle.nodes
-    })
-      .foreach(n => {
-        if (n.value == 0)
-          zero = n
-
-        else if (n.value < 0)
-          circle.displace(n, circle.size - 1 - ((-n.value) % (circle.size - 1)).toInt)
+    (1 to howManyRepetitions).flatMap(_ => circle.nodes)
+      .foreach(node => {
+        if (node.value == 0)
+          zero = node
+        else if (node.value < 0)
+          circle.displace(node, circle.size - 1 - ((-node.value) % (circle.size - 1)).toInt)
         else
-          circle.displace(n, (n.value % (circle.size - 1)).toInt)
+          circle.displace(node, (node.value % (circle.size - 1)).toInt)
       })
-
-    //      println("-----------------")
-    //      LazyList.iterate(zero.next)(_.next)
-    //        .takeWhile(zero != _)
-    //        .map(_.value)
-    //        .foreach(println)
-    //    })
 
     LazyList(1000, 2000, 3000)
       .map(zero.jump(_))
       .map(_.value)
-      //      .tapEach(println)
       .sum
-
-    // 5629182365208 too low - given by the one when I flipped sign
-
   }
 }
