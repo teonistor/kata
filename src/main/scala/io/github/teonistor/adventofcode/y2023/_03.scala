@@ -2,34 +2,13 @@ package io.github.teonistor.adventofcode.y2023
 
 import io.github.teonistor.adventofcode.StandardAdventOfCodeSolution
 
+import scala.util.matching.Regex
+import scala.util.matching.Regex.Groups
+
 object _03 extends StandardAdventOfCodeSolution[Long]{
 
   override def _1(input: String): Long = {
-    val splitter = "([^.0-9]+)|(\\.+)|([0-9]+)".r
-
-    val glob = input.split("\n").iterator
-      .zipWithIndex
-      .flatMap { case (line, row) =>
-        splitter.findAllMatchIn(line).flatMap { mtch =>
-          if (mtch.group(1) != null)
-            Some(Left(Position(row, mtch.start)))
-          else if (mtch.group(2) != null)
-            None
-          else
-            Some(Right(NumberFound(mtch.group(3).toInt, computeActivators(row, mtch.start, mtch.end))))
-        }
-
-      }
-      .toList
-
-    val activators = glob.iterator.flatMap {
-      case Left(pos) => Some(pos)
-      case _=> None
-    }.toSet
-    val numbersFound = glob.iterator.flatMap {
-      case Right(nf) => Some(nf)
-      case _=> None
-    }.toSet
+    val (activators,numbersFound) = parseInput(input, "([^.0-9]+)|(\\.+)|([0-9]+)".r)
 
     numbersFound.iterator
       .filter(_.activators.exists(activators))
@@ -38,31 +17,7 @@ object _03 extends StandardAdventOfCodeSolution[Long]{
   }
 
   override def _2(input: String): Long = {
-    val splitter = "([^*0-9]+)|(\\*+)|([0-9]+)".r
-
-    val glob = input.split("\n").iterator
-      .zipWithIndex
-      .flatMap { case (line, row) =>
-        splitter.findAllMatchIn(line).flatMap { mtch =>
-          if (mtch.group(1) != null)
-            None
-          else if (mtch.group(2) != null)
-            Some(Left(Position(row, mtch.start)))
-          else
-            Some(Right(NumberFound(mtch.group(3).toInt, computeActivators(row, mtch.start, mtch.end))))
-        }
-
-      }
-      .toList
-
-    val activators = glob.iterator.flatMap {
-      case Left(pos) => Some(pos)
-      case _ => None
-    }.toSet
-    val numbersFound = glob.iterator.flatMap {
-      case Right(nf) => Some(nf)
-      case _ => None
-    }.toSet
+    val (activators,numbersFound) = parseInput(input, "(\\*+)|([^*0-9]+)|([0-9]+)".r)
 
     activators.iterator
       .map(a => numbersFound.filter(_.activators contains a))
@@ -70,6 +25,21 @@ object _03 extends StandardAdventOfCodeSolution[Long]{
       .map(_.iterator.map(_.number.toLong).product)
       .sum
   }
+
+  private def parseInput(input: String, splitter: Regex) =
+    input.split("\n").iterator
+      .zipWithIndex
+      .flatMap { case (line, row) =>
+        splitter.findAllMatchIn(line).flatMap (mtch => mtch match {
+          case Groups(_, null, null) => Some(Left(Position(row, mtch.start)))
+          case Groups(null, null, number) => Some(Right(NumberFound(number.toInt, computeActivators(row, mtch.start, mtch.end))))
+          case _=> None
+        })
+      }
+      .foldLeft((Set.empty[Position], Set.empty[NumberFound])) {
+        case ((activators,numbersFound), Left(pos)) => (activators + pos, numbersFound)
+        case ((activators,numbersFound), Right(nf)) => (activators, numbersFound + nf)
+      }
 
   private case class Position(row: Int, col: Int)
   private case class NumberFound(number: Int, activators: Set[Position])
