@@ -48,11 +48,11 @@ object _07 extends StandardAdventOfCodeSolution[Long] {
 
 
   private val types2 = List(
-    (hand: String) => { val (j,map) = bagHand2(hand); map.exists(_._2 >= 5-j) },
+    (hand: String) => { val (j,map) = bagHand2(hand); j == 5 || map.exists(_._2 >= 5-j) },
     (hand: String) => { val (j,map) = bagHand2(hand); map.exists(_._2 == 4-j) },
-    (hand: String) => { val (j,map) = bagHand2(hand); map.values.toSet == Set(2, 3) },    // inexact
+    (hand: String) => { val (j,map) = bagHand2(hand); j == 1 && map.values.count(_ >= 2) == 2 || map.values.toSet == Set(2, 3) },    // inexact
     (hand: String) => { val (j,map) = bagHand2(hand); map.exists(_._2 == 3-j) },
-    (hand: String) => { val (j,map) = bagHand2(hand); map.values.count(_ >= 2-j) == 2 },  // inexact
+    (hand: String) => { val (j,map) = bagHand2(hand); j == 1 &&map.exists(_._2 == 2) || map.values.count(_ >= 2-j) == 2 },  // inexact
     (hand: String) => { val (j,map) = bagHand2(hand); map.exists(_._2 == 2-j) })
 
   private val byType2 = (hand: String) => types2.iterator.zipWithIndex
@@ -97,10 +97,4 @@ object _07 extends StandardAdventOfCodeSolution[Long] {
     val j = value.getOrElse('J', 0)
     (j, value.removed('J'))
   }
-
-
 }
-
-
-// 250957639
-// 251579159 too high
