@@ -3,7 +3,7 @@ package io.github.teonistor.adventofcode.y2023
 import io.github.teonistor.adventofcode.AdventOfCodeTestBase
 
 class _10Test extends AdventOfCodeTestBase {
-  autorun(_10, 8, 0, "..F7.\n.FJ|.\nSJ.L7\n|F--J\nLJ...")
+  autorun(_10, 8, 1, "..F7.\n.FJ|.\nSJ.L7\n|F--J\nLJ...")
 
   test("part 2 Small example") {
     assert(_10._2("...........\n.S-------7.\n.|F-----7|.\n.||.....||.\n.||.....||.\n.|L-7.F-J|.\n.|..|.|..|.\n.L--J.L--J.\n...........") == 4)
