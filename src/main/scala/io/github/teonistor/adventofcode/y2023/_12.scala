@@ -5,14 +5,25 @@ import io.github.teonistor.adventofcode.StandardAdventOfCodeSolution
 
 object _12 extends StandardAdventOfCodeSolution[Long] {
 
-  override def _1(input: String): Long = {
+  override def _1(input: String): Long =
     input.split('\n').iterator
       .map(solveOne)
       .sum
+
+  override def _2(input: String): Long =
+    input.split('\n').iterator
+      .map(solveOne2)
+      .sum
+
+  @VisibleForTesting
+  def solveOne2(row: String): Long = {
+    val report :: summaryStr :: Nil = row.split(' ').toList
+    val summary = summaryStr.split(',').toList.map(_.toInt)
+    solveRecu(
+      Iterator.fill(5)(report).mkString("?"),
+      0,
+      List.fill(5)(summary).flatten)
   }
-
-  override def _2(input: String): Long = ???
-
 
   @VisibleForTesting
   def solveOne(row: String): Long = {
@@ -50,4 +61,4 @@ object _12 extends StandardAdventOfCodeSolution[Long] {
   }
 }
 
-// between 3789 and 7505
+// 7361
