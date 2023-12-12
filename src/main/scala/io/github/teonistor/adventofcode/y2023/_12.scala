@@ -31,7 +31,16 @@ object _12 extends StandardAdventOfCodeSolution[Long] {
 
     else {
       val endPos = pos + remaining.head
-      if (endPos > report.length || report.substring(pos, endPos).contains('.') || endPos < report.length && report(endPos) == '#')
+      if (endPos > report.length)
+        0
+      else if (endPos < report.length && report(pos) == '#' && report(endPos) == '#')
+        0
+      else if (report.substring(pos, endPos).contains('.'))
+        if (report(pos) != '#')
+          solveRecu(report, pos + 1, remaining)
+        else
+          0
+      else if (endPos < report.length && report(endPos) == '#')
         solveRecu(report, pos + 1, remaining)
       else if (report(pos) == '#')
         solveRecu(report, endPos + 1, remaining.tail)
