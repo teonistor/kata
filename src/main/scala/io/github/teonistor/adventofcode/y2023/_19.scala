@@ -50,10 +50,10 @@ object _19 extends StandardAdventOfCodeSolution[Long] {
   }
 
   override def _2(input: String): Long = {
-    val workflows :: parts :: Nil = input.strip()
+    val workflowsStr :: partsStr :: Nil = input.strip()
       .split("\\n{2,}").toList
 
-    val wf = workflows.split('\n').iterator
+    val workflows = workflowsStr.split('\n').iterator
       .map {
         case parseWorkflow(name, rulesStr) =>
           val rules = rulesStr.split(',').iterator.map {
@@ -64,70 +64,57 @@ object _19 extends StandardAdventOfCodeSolution[Long] {
       }.toMap
 
 
-    def putIntervalThroughWorkflow(property:String, start:Long, end:Long, workflowKey:String): Set[(Long,Long)] =
+    def grind(intervals:Map[String, (Long,Long)], workflowKey:String): Long =
       if (workflowKey == "R")
-        Set.empty
+        0L
       else if (workflowKey == "A")
-        Set((start, end))
+        intervals.valuesIterator
+          .map { case (start, end) => end - start + 1 }
+          .product
       else {
-        val sel = wf(workflowKey)
+        val sel = workflows(workflowKey)
 
-        val activeRules = sel.rules
-          .filter(_.property == property)
 
-        def fff(rules: List[Rule], start: Long, end: Long /*, acc: Set[(Long, Long)]*/): Set[(Long, Long)] =
+        def fff(rules: List[Rule], intervals:Map[String, (Long,Long)]):Long =
           if (rules.isEmpty)
-            putIntervalThroughWorkflow(property, start, end, sel.fallback)
+            grind(intervals, sel.fallback)
 
           else {
             val Rule(ruleProp, sign, bound, next) :: tail = rules
-            if (property != ruleProp) {
-              // not for us, could be either
-              val possiblyOverlapping = fff(tail, start, end) ++ putIntervalThroughWorkflow(property, start, end, next)
-              val (acc, overhang) = possiblyOverlapping.to(LazyList)
-                .sortBy(_._1)
-                .foldLeft((Set.empty[(Long,Long)], (-1L, -1L))) {
-                  case ((acc, (-1L, -1L)), (currStart, currEnd)) => (acc, (currStart, currEnd))
-                  case ((acc, (lastStart, lastEnd)), (currStart, currEnd)) =>
-                    if (currStart - lastEnd > 1)
-                      (acc.incl((lastStart, lastEnd)), (currStart, currEnd))
-                    else
-                      (acc, (lastStart min currStart, lastEnd max currEnd))
-                }
-              acc incl overhang
+            val (start, end) = intervals(ruleProp)
 
-            } else if (sign == '<' && end < bound || sign == '>' && start > bound)
+             if (sign == '<' && end < bound || sign == '>' && start > bound)
               // all in
-              putIntervalThroughWorkflow(property, start, end, next)
+              grind(intervals, next)
             else if (sign == '<' && start > bound || sign == '>' && end < bound)
               // all out
-              fff(tail, start, end)
+              fff(tail, intervals)
             else if (sign == '<')
               // start to bound-1 in, bound to end out
-              putIntervalThroughWorkflow(property, start, bound - 1, next) ++ fff(tail, bound, end)
+              grind(intervals.updated(ruleProp, (start, bound - 1)), next) + fff(tail, intervals.updated(ruleProp, (bound, end)))
             else
               // start to bound out, bound+1 to end in
-              fff(tail, start, bound) ++ putIntervalThroughWorkflow(property, bound + 1, end, next)
+              fff(tail, intervals.updated(ruleProp, (start, bound))) + grind(intervals.updated(ruleProp, (bound+1, end)), next)
           }
 
-        fff(sel.rules, start, end)
+        fff(sel.rules, intervals)
       }
 
-    Iterator("x", "m", "a", "s")
-        .map(str => {
-          val value = putIntervalThroughWorkflow(str, 1, 4000, "in")
-          value.iterator
-            .map { case (start, end) => end - start + 1 }
-            .sum
-        })
-      .map { v=> println(v); v }
-      .product
+    grind(Iterator("x", "m", "a", "s")
+      .map((_, (1L, 4000L)))
+      .toMap      , "in")
+//    Iterator("x", "m", "a", "s")
+//        .map(str => {
+//          val value = grind(str, 1, 4000, "in")
+//          value.iterator
+//            .map { case (start, end) => end - start + 1 }
+//            .sum
+//        })
+//      .map { v=> println(v); v }
+//      .product
 
   }
 
   case class Workflow(name:String, rules:List[Rule], fallback: String)
   case class Rule(property:String, sign:Char, bound:Long, next:String)
 }
-
-// 319295
-//
