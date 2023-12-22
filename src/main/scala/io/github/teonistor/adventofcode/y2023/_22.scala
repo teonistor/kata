@@ -2,6 +2,7 @@ package io.github.teonistor.adventofcode.y2023
 
 import io.github.teonistor.adventofcode.StandardAdventOfCodeSolution
 
+import scala.collection.immutable.Queue
 import scala.collection.mutable
 
 object _22 extends StandardAdventOfCodeSolution[Int] {
@@ -27,13 +28,48 @@ object _22 extends StandardAdventOfCodeSolution[Int] {
   }
 
   override def _1(input: String): Int = {
+
+val leanOn = computeLeaningMap(input)
+    val aye = leanOn.values.toSet
+      .filter(_.size == 1)
+
+
+    leanOn.size - aye.size
+  }
+
+  override def _2(input: String): Int = {
+    val leanOn = computeLeaningMap(input)
+    val leanedOn = leanOn.iterator.flatMap {
+      case (above, below) => below.iterator.map((_, above))
+    }
+      .to(Set)
+      .groupMap(_._1)(_._2)
+//    val memo:mutable.Map[Brick,Int] = mutable.Map.empty
+
+    def ifItWereGone(disappearing:Queue[Brick], leanOnRemaining:Map[Brick,Set[Brick]]): Map[Brick, Set[Brick]] =
+      if (disappearing.isEmpty)
+        leanOnRemaining
+      else {
+        val nextToGo = disappearing.head
+        val lll = leanedOn.getOrElse(nextToGo, Set.empty).iterator
+          .foldLeft(leanOnRemaining) ((lr, buf) => lr.updated(buf, lr(buf) - nextToGo))
+        ifItWereGone(disappearing.tail ++ leanedOn.getOrElse(nextToGo, Set.empty).filter(u => lll(u).isEmpty), lll)
+      }
+
+    leanOn.keysIterator
+      // This is also incorrect because bricks directly on the ground lean on nothing but wouldn't fall
+      .map(u => ifItWereGone(Queue(u), leanOn).count(U => U._1.lowestHeight > 1 && U._2.isEmpty))
+      .sum
+  }
+
+  private def computeLeaningMap(input:String)={
     // x,y,z follow the Blender convention
-   val bricks = input.split('\n').iterator.map {
-     case splitter(x1, y1, z1, x2, y2, z2) => //((x1.toInt,y1.toInt,z1.toInt),(x2.toInt,y2.toInt,z2.toInt))
-       Brick((x1.toInt to x2.toInt).flatMap(x =>
-         (y1.toInt to y2.toInt).flatMap(y =>
-           (z1.toInt to z2.toInt).map((x, y, _)))).toSet)
-   }.toSet
+    val bricks = input.split('\n').iterator.map {
+      case splitter(x1, y1, z1, x2, y2, z2) =>
+        Brick((x1.toInt to x2.toInt).flatMap(x =>
+          (y1.toInt to y2.toInt).flatMap(y =>
+            (z1.toInt to z2.toInt).map((x, y, _)))).toSet)
+    }.toSet
 
     val que = mutable.PriorityQueue.newBuilder(Ordering.by(-(_:Brick).lowestHeight))
       .addAll(bricks)
@@ -41,23 +77,9 @@ object _22 extends StandardAdventOfCodeSolution[Int] {
 
 
     val settledBricks = fall(que)
-    val leanOn = settledBricks.map(brick =>(brick, settledBricks.filter(_.points.exists(it => brick.floorProjection contains it))))
+    settledBricks.map(brick =>(brick, settledBricks.filter(_.points.exists(it => brick.floorProjection contains it))))
       .toMap
-
-    val aye = leanOn.values.toSet
-      .filter(_.size == 1)
-
-//    println(s"Bricks size ${bricks.size}")
-//    println(s"Settled bricks size ${settledBricks.size}")
-//    println(s"LeanOn size ${leanOn.size}")
-//
-//    println(leanOn)
-//    println(aye)
-
-    bricks.size - aye.size
   }
-
-  override def _2(input: String): Int = ???
 
   private def fall(floating: mutable.PriorityQueue[Brick], fallen: Set[Brick] = Set.empty, ground:Map[(Int,Int), Int] = Map.empty): Set[Brick]=
     if (floating.isEmpty)
