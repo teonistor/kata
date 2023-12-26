@@ -33,53 +33,49 @@ object _21 extends StandardAdventOfCodeSolution[Int] {
     val map = mapChr
       .map(line => line.toCharArray.map(_ != '#'))
 
-    val memo = mutable.Map.empty[(Int, Int, Int), Set[(Int, Int)]]
+    val memo = mutable.Map.empty[(Int, Int, Int), Map[(Int, Int), Set[(Int, Int)]]]
 
-    def moveUnbounded(current: Set[(Int, Int)], steps: Int): Set[(Int, Int)] = {
+    def moveUnbounded(current: Map[(Int, Int), Set[(Int, Int)]], steps: Int): Map[(Int, Int), Set[(Int, Int)]] = {
 //      val diff = steps - stepsso
+      println("Looking for steps " + steps)
 
       if (steps < 1)
         current
       else
-        current.flatMap { case (currentRow, currentCol) =>
-          val normalisedRow = currentRow %% map.length
-          val normalisedCol = currentCol %% map(0).length
-
-          def breakdownMove() = {
-            powersOf2.find(_<steps).fold(
-              Set((currentRow - 1, currentCol), (currentRow + 1, currentCol), (currentRow, currentCol - 1), (currentRow, currentCol + 1))
-                .filter {
-                  case (nr, nc) => map(nr %% map.length)(nc %% map(0).length)
-                }
-            )(power => moveUnbounded(moveUnbounded(current, power), steps - power))
-
-//            if (steps > 65536)
-//              moveUnbounded(moveUnbounded(current, 65536), steps - 65536)
-//            else if (steps > 256)
-//              moveUnbounded(moveUnbounded(current, 256), steps - 256)
-//            else if (steps > 16)
-//              moveUnbounded(moveUnbounded(current, 16), steps - 16)
-//            else if (steps > 4)
-//              moveUnbounded(moveUnbounded(current, 4), steps - 4)
-//            else if (steps > 2)
-//              moveUnbounded(moveUnbounded(current, 2), steps - 2)
-//            else if (steps > 1)
-//              moveUnbounded(moveUnbounded(current, 1), steps - 1)
-//            else
-//              Set((currentRow - 1, currentCol), (currentRow + 1, currentCol), (currentRow, currentCol - 1), (currentRow, currentCol + 1))
-//                .filter {
-//                  case (nr, nc) => map(nr %% map.length)(nc %% map(0).length)
-//                }
-          }
+        current.to(LazyList).flatMap { case ((currentRow, currentCol), boards) =>
+//          val normalisedRow = currentRow %% map.length
+//          val normalisedCol = currentCol %% map(0).length
 
           memo.getOrElseUpdate((currentRow, currentCol, steps), {
-            if (normalisedRow == currentRow && normalisedCol == currentCol)
-              breakdownMove()
-            else
-              moveUnbounded(Set((normalisedRow, normalisedCol)), steps).map {
-                case (row, col) => (row - normalisedRow + currentRow, col - normalisedCol + currentCol)
-              }
-          })
+            println("Computing for steps " + steps)
+            powersOf2.find(_ < steps).fold(
+              Set((currentRow - 1, currentCol), (currentRow + 1, currentCol), (currentRow, currentCol - 1), (currentRow, currentCol + 1))
+                .map {
+                  case (nr, nc) => ((nr %% map.length, nc %% map(0).length), (nr,nc))
+                }
+                .filter {
+                  case ((nnr, nnc),_) => map(nnr)(nnc)
+                }
+                .groupMap(_._1){ case ((nnr,nnc),(nr,nc)) => (sgn(nnr,nr), sgn(nnc,nc)) }
+            )(power => moveUnbounded(moveUnbounded(current, power), steps - power))
+
+
+
+
+//            if (normalisedRow == currentRow && normalisedCol == currentCol)
+//              powersOf2.find(_ < steps).fold(
+//                Set((currentRow - 1, currentCol), (currentRow + 1, currentCol), (currentRow, currentCol - 1), (currentRow, currentCol + 1))
+//                  .filter {
+//                    case (nr, nc) => map(nr %% map.length)(nc %% map(0).length)
+//                  }
+//              )(power => moveUnbounded(moveUnbounded(current, power), steps - power))
+//            else
+//              moveUnbounded(Set((normalisedRow, normalisedCol)), steps).map {
+//                case (row, col) => (row - normalisedRow + currentRow, col - normalisedCol + currentCol)
+//              }
+          }).iterator.map {
+            case (k, vs) => (k, vs.flatMap(v => boards.map(v +_)))//.map((k, _))
+          }
 
 //          if (normalisedRow == currentRow && normalisedCol == currentCol)
 //            memo.getOrElseUpdate((currentRow, currentCol, steps), breakdownMove())
@@ -87,10 +83,10 @@ object _21 extends StandardAdventOfCodeSolution[Int] {
 //            moveUnbounded(Set((normalisedRow, normalisedCol)), steps).map {
 //              case (row, col) => (row - normalisedRow + currentRow, col - normalisedCol + currentCol)
 //            }
-        }
+        }.groupMapReduce(_._1)(_._2)(_++_)
     }
 
-    moveUnbounded(Set(start), steps)
+    moveUnbounded(Map(start -> Set((0,0))), steps)
       .size
   }
 
@@ -105,7 +101,22 @@ object _21 extends StandardAdventOfCodeSolution[Int] {
         }
     })
 
+  private def sgn(a:Int,b:Int) = {
+    if (a < b) -1
+    else if (a == b) 0
+    else 1
+  }
+
   private implicit class DefinitelyPositiveMod(val self: Int) extends AnyVal {
     private[_21] def %%(other: Int) = (self % other + other) % other
+  }
+
+  private implicit class PointOp(val self: (Int,Int)) extends AnyVal {
+
+    private[_21] def + (other: (Int,Int)) =
+      (other._1 + self._1, other._2 + self._2)
+
+//    private[_18] def * (other: Long) =
+//      (self._1 * other, self._2 * other)
   }
 }
