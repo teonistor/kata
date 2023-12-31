@@ -7,6 +7,11 @@ class _12Test extends AdventOfCodeTestBase {
 
   autorun(_12, 21L, 525152L, exampleInput)
 
+  test("Calculate one box with bitmask") {
+    assert(_12.calculateOneBox("???#", List(1,1)) ==2L)
+
+  }
+
   test("Individual rows in part 1 example") {
     assert(_12.solveOne("???.### 1,1,3") == 1)
     assert(_12.solveOne(".??..??...?##. 1,1,3") == 4)
@@ -37,5 +42,11 @@ class _12Test extends AdventOfCodeTestBase {
     assert(_12.solveOne2("????.#...#... 4,1,1") == 16)
     assert(_12.solveOne2("????.######..#####. 1,6,5") == 2500)
     assert(_12.solveOne2("?###???????? 3,2,1") == 506250)
+  }
+
+  test("More examples of my invention") {
+// Here's one that takes foreeeveeeer
+//    assert(_12.solveOne("????????.????. 1,2,2,1") == 99999)
+    assert(_12.solveOne2("????????.????. 1,2,2,1") == 13699867637L)  //  ???
   }
 }
