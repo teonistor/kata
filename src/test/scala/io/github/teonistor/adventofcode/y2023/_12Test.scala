@@ -3,50 +3,43 @@ package io.github.teonistor.adventofcode.y2023
 import io.github.teonistor.adventofcode.AdventOfCodeTestBase
 
 class _12Test extends AdventOfCodeTestBase {
-  private val exampleInput = "???.### 1,1,3\n.??..??...?##. 1,1,3\n?#?#?#?#?#?#?#? 1,3,1,6\n????.#...#... 4,1,1\n????.######..#####. 1,6,5\n?###???????? 3,2,1"
 
-  autorun(_12, 21L, 525152L, exampleInput)
-
-  test("Calculate one box with bitmask") {
-    assert(_12.calculateOneBox("???#", List(1,1)) ==2L)
-
-  }
+  // Caution! Real input part 2 took 3hr57min
+  autorun(_12, 21L, 525152L, "???.### 1,1,3\n.??..??...?##. 1,1,3\n?#?#?#?#?#?#?#? 1,3,1,6\n????.#...#... 4,1,1\n????.######..#####. 1,6,5\n?###???????? 3,2,1")
 
   test("Individual rows in part 1 example") {
-    assert(_12.solveOne("???.### 1,1,3") == 1)
-    assert(_12.solveOne(".??..??...?##. 1,1,3") == 4)
-    assert(_12.solveOne("?#?#?#?#?#?#?#? 1,3,1,6") == 1)
-    assert(_12.solveOne("????.#...#... 4,1,1") == 1)
-    assert(_12.solveOne("????.######..#####. 1,6,5") == 4)
-    assert(_12.solveOne("?###???????? 3,2,1") == 10)
+    assert(_12.solveSimpleRow("???.### 1,1,3") == 1)
+    assert(_12.solveSimpleRow(".??..??...?##. 1,1,3") == 4)
+    assert(_12.solveSimpleRow("?#?#?#?#?#?#?#? 1,3,1,6") == 1)
+    assert(_12.solveSimpleRow("????.#...#... 4,1,1") == 1)
+    assert(_12.solveSimpleRow("????.######..#####. 1,6,5") == 4)
+    assert(_12.solveSimpleRow("?###???????? 3,2,1") == 10)
   }
 
-  test("Individual examples of my invention") {
-    assert(_12.solveOne("???? 1,1") == 3)
-    assert(_12.solveOne(".??.??. 1,1") == 4)
-    assert(_12.solveOne(".............................. 1") == 0)
-    assert(_12.solveOne("............?..?.............. 1") == 2)
-    assert(_12.solveOne("............?..#.............. 2") == 0)
-    assert(_12.solveOne("............#..#.............. 1") == 0)
-    assert(_12.solveOne("?????????????????????????????? 1,1") == 28 * 29 / 2)
+  test("Individual part 1 examples of my invention") {
+    assert(_12.solveSimpleRow("???? 1,1") == 3)
+    assert(_12.solveSimpleRow(".??.??. 1,1") == 4)
+    assert(_12.solveSimpleRow(".............................. 1") == 0)
+    assert(_12.solveSimpleRow("............?..?.............. 1") == 2)
+    assert(_12.solveSimpleRow("............?..#.............. 2") == 0)
+    assert(_12.solveSimpleRow("............#..#.............. 1") == 0)
+    assert(_12.solveSimpleRow("?????????????????????????????? 1,1") == 28 * 29 / 2)
     (1 to 30).foreach(i =>
-      assert(_12.solveOne("?????????????????????????????? " + i) == 31 - i))
+      assert(_12.solveSimpleRow("?????????????????????????????? " + i) == 31 - i))
     (1 to 29).foreach(i =>
-      assert(_12.solveOne("############################## " + i) == 0))
+      assert(_12.solveSimpleRow("############################## " + i) == 0))
   }
 
   test("Individual rows in part 2 example") {
-    assert(_12.solveOne2("???.### 1,1,3") == 1)
-    assert(_12.solveOne2(".??..??...?##. 1,1,3") == 16384)
-    assert(_12.solveOne2("?#?#?#?#?#?#?#? 1,3,1,6") == 1)
-    assert(_12.solveOne2("????.#...#... 4,1,1") == 16)
-    assert(_12.solveOne2("????.######..#####. 1,6,5") == 2500)
-    assert(_12.solveOne2("?###???????? 3,2,1") == 506250)
+    assert(_12.solveFoldedRow("???.### 1,1,3") == 1)
+    assert(_12.solveFoldedRow(".??..??...?##. 1,1,3") == 16384)
+    assert(_12.solveFoldedRow("?#?#?#?#?#?#?#? 1,3,1,6") == 1)
+    assert(_12.solveFoldedRow("????.#...#... 4,1,1") == 16)
+    assert(_12.solveFoldedRow("????.######..#####. 1,6,5") == 2500)
+    assert(_12.solveFoldedRow("?###???????? 3,2,1") == 506250)
   }
 
-  test("More examples of my invention") {
-// Here's one that takes foreeeveeeer
-//    assert(_12.solveOne("????????.????. 1,2,2,1") == 99999)
-    assert(_12.solveOne2("????????.????. 1,2,2,1") == 13699867637L)  //  ???
+  test("Individual part 2 examples of my invention") {
+    assert(_12.solveFoldedRow("????????.????. 1,2,2,1") == 13699867637L)
   }
 }
