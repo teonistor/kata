@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PRO
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import com.google.common.annotations.VisibleForTesting
 import org.springframework.web.reactive.function.client.WebClient.RequestHeadersSpec
 import org.springframework.web.reactive.function.client.{WebClient, WebClientResponseException}
 import org.springframework.web.util.UriComponentsBuilder
@@ -14,6 +15,7 @@ import java.net.URLEncoder.encode
 import java.nio.charset.StandardCharsets.UTF_8
 import java.nio.file.Files.{readString, writeString}
 import java.nio.file.Path.{of => path}
+import java.util.Objects.nonNull
 import scala.beans.BeanProperty
 
 object PlaylistPuller {
@@ -66,7 +68,9 @@ object PlaylistPuller {
 
       path("spotify/").toFile.mkdirs()
       writeString(path(s"spotify/${responseEssence.name}.json"), responseFull.toPrettyString)
-      writeString(path(s"spotify/${responseEssence.name}.mini.json"), objectMapper.valueToTree(responseEssence).asInstanceOf[JsonNode].toPrettyString)
+      // TODO Come here - this writes out all the nested stuff, obvs..
+//      writeString(path(s"spotify/${responseEssence.name}.mini.json"), objectMapper.valueToTree(responseEssence).asInstanceOf[JsonNode].toPrettyString)
+      writeString(path(s"spotify/${responseEssence.name}.mini.yaml"), mkNiceYaml(responseEssence))
 
     } catch {
       case e: WebClientResponseException =>
@@ -75,40 +79,62 @@ object PlaylistPuller {
     }
   }
 
-  private case class Playlist @JsonCreator(mode = PROPERTIES)(
+  @VisibleForTesting
+  private[spotify] def mkNiceYaml(playlist: Playlist) =
+    playlist.content.items
+      .flatMap(_.itemV2.data match { case Track(name, album, artists) =>
+        val albumName = Option(album).map(_.name).filter(nonNull)
+        val artistNames = Iterator(artists)
+          .filter(nonNull)
+          .flatMap(_.items)
+          .filter(nonNull)
+          .flatMap(a=>Option(a.profile))
+          .flatMap(a=>Option(a.name))
+        List.concat(
+          Option(name).map(n => s"-name:    '$n'") orElse Some("-name:     null"),
+          albumName.map(a=> s" album:   '$a'"),
+          Option(artistNames)
+            .filter(_.nonEmpty)
+            .map(_.mkString(" artists:['","', '", "']")))
+      })
+      .prepended("tracks:")
+      .prependedAll(Option(playlist.name).map("name: '"+_+"'"))
+      .mkString("\n")
+
+  private[spotify] case class Playlist @JsonCreator(mode = PROPERTIES)(
           @BeanProperty @JsonProperty("name") name: String,
           @BeanProperty @JsonProperty("content") content: PlaylistContent)
 
-  private case class PlaylistContent @JsonCreator(mode = PROPERTIES)(
+  private[spotify] case class PlaylistContent @JsonCreator(mode = PROPERTIES)(
           @BeanProperty @JsonProperty("totalCount") totalCount: Int,
           @BeanProperty @JsonProperty("pagingInfo") pagingInfo: PagingInfo,
           @BeanProperty @JsonProperty("items") items: List[PlaylistItem])
 
-  private case class PagingInfo @JsonCreator(mode = PROPERTIES)(
+  private[spotify] case class PagingInfo @JsonCreator(mode = PROPERTIES)(
           @BeanProperty @JsonProperty("offset") offset: Int,
           @BeanProperty @JsonProperty("limit") limit: Int)
 
-  private case class PlaylistItem @JsonCreator(mode = PROPERTIES)(
+  private[spotify] case class PlaylistItem @JsonCreator(mode = PROPERTIES)(
           @BeanProperty @JsonProperty("itemV2") itemV2: TrackWrapper)
 
-  private case class TrackWrapper @JsonCreator(mode = PROPERTIES)(
+  private[spotify] case class TrackWrapper @JsonCreator(mode = PROPERTIES)(
           @BeanProperty @JsonProperty("data") data: Track)
 
-  private case class Track @JsonCreator(mode = PROPERTIES)(
+  private[spotify] case class Track @JsonCreator(mode = PROPERTIES)(
           @BeanProperty @JsonProperty("name") name: String,
           @BeanProperty @JsonProperty("albumOfTrack") albumOfTrack: Album,
           @BeanProperty @JsonProperty("artists") artists: ArtistWrapper)
 
-  private case class Album @JsonCreator(mode = PROPERTIES)(
+  private[spotify] case class Album @JsonCreator(mode = PROPERTIES)(
           @BeanProperty @JsonProperty("name") name: String)
 
-  private case class ArtistWrapper @JsonCreator(mode = PROPERTIES)(
+  private[spotify] case class ArtistWrapper @JsonCreator(mode = PROPERTIES)(
           @BeanProperty @JsonProperty("items") items: List[ArtistItem])
 
-  private case class ArtistItem @JsonCreator(mode = PROPERTIES)(
+  private[spotify] case class ArtistItem @JsonCreator(mode = PROPERTIES)(
           @BeanProperty @JsonProperty("profile") profile: ArtistProfile)
 
-  private case class ArtistProfile @JsonCreator(mode = PROPERTIES)(
+  private[spotify] case class ArtistProfile @JsonCreator(mode = PROPERTIES)(
           @BeanProperty @JsonProperty("name") name: String)
 }
 
