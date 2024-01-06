@@ -15,7 +15,6 @@ import java.net.URLEncoder.encode
 import java.nio.charset.StandardCharsets.UTF_8
 import java.nio.file.Files.{readString, writeString}
 import java.nio.file.Path.{of => path}
-import java.util.Objects.nonNull
 import scala.beans.BeanProperty
 
 object PlaylistPuller {
@@ -24,15 +23,16 @@ object PlaylistPuller {
     pull("api-partner.spotify.com",
       readString(path("cache/spotify/authorization")),
       readString(path("cache/spotify/client-token")),
-      "37i9dQZF1Fa1IIVtEpGUcU")
+      "37i9dQZF1F0sijgNaJdgit")
   }
+
+  private val objectMapper = JsonMapper.builder()
+    .findAndAddModules()
+    .addModule(DefaultScalaModule)
+    .configure(FAIL_ON_UNKNOWN_PROPERTIES, false).build()
 
   def pull(host: String, authorization: String, clientToken: String, playlistId: String, portOverride: Option[Int] = None): Unit = {
     try {
-      val objectMapper = JsonMapper.builder()
-        .findAndAddModules()
-        .addModule(DefaultScalaModule)
-        .configure(FAIL_ON_UNKNOWN_PROPERTIES, false).build()
       val web = WebClient.builder()
         .codecs(_.defaultCodecs().maxInMemorySize(1024 * 1024 * 1024))
         .defaultHeader("authorization", authorization)
@@ -82,24 +82,26 @@ object PlaylistPuller {
   @VisibleForTesting
   private[spotify] def mkNiceYaml(playlist: Playlist) =
     playlist.content.items
-      .flatMap(_.itemV2.data match { case Track(name, album, artists) =>
-        val albumName = Option(album).map(_.name).filter(nonNull)
-        val artistNames = Iterator(artists)
-          .filter(nonNull)
-          .flatMap(_.items)
-          .filter(nonNull)
-          .flatMap(a=>Option(a.profile))
-          .flatMap(a=>Option(a.name))
-        List.concat(
-          Option(name).map(n => s"-name:    '$n'") orElse Some("-name:     null"),
-          albumName.map(a=> s" album:   '$a'"),
-          Option(artistNames)
+      .flatMap(_.itemV2.data match {
+        case Track(name, album, artists) => List.concat(
+          // Calls to .toString trigger a null check :P
+          deepOption(s"- name:     ${objectMapper.writeValueAsString(name.toString)}") orElse Some("- name:      null"),
+          deepOption(s"  album:    ${objectMapper.writeValueAsString(album.name.toString)}"),
+          deepOption(artists.items)
+            .map(_.flatMap(a => deepOption(a.profile.name)))
             .filter(_.nonEmpty)
-            .map(_.mkString(" artists:['","', '", "']")))
+            .map(a => "  artists: " + objectMapper.writeValueAsString(a)))
       })
       .prepended("tracks:")
-      .prependedAll(Option(playlist.name).map("name: '"+_+"'"))
+      .prependedAll(Option(playlist.name).map(n => s"name: ${objectMapper.writeValueAsString(n)}"))
       .mkString("\n")
+
+  private def deepOption[T](expr: => T) =
+    try {
+      Option(expr)
+    } catch {
+      case _:NullPointerException => None
+    }
 
   private[spotify] case class Playlist @JsonCreator(mode = PROPERTIES)(
           @BeanProperty @JsonProperty("name") name: String,
