@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.google.common.annotations.VisibleForTesting
+import io.github.teonistor.algohelper.LocalDiscCache
+import io.github.teonistor.spotify.SpotifyDataUtil.{playlistCoordinatesToNice, playlistStructureToNice, pullPlaylistContent, pullPlaylistCoordinates}
 import org.springframework.web.reactive.function.client.WebClient.RequestHeadersSpec
 import org.springframework.web.reactive.function.client.{WebClient, WebClientResponseException}
 import org.springframework.web.util.UriComponentsBuilder
@@ -15,15 +17,58 @@ import java.net.URLEncoder.encode
 import java.nio.charset.StandardCharsets.UTF_8
 import java.nio.file.Files.{readString, writeString}
 import java.nio.file.Path.{of => path}
+import java.util.concurrent.Callable
+import java.util.concurrent.Executors.newFixedThreadPool
 import scala.beans.BeanProperty
 
 object PlaylistPuller {
 
+  private val executor = newFixedThreadPool(8, (r: Runnable) => {
+    val t = new Thread(r)
+    t.setDaemon(true)
+    t
+  })
+
   def main(args: Array[String]): Unit = {
-    pull("api-partner.spotify.com",
-      readString(path("cache/spotify/authorization")),
-      readString(path("cache/spotify/client-token")),
-      "37i9dQZF1F0sijgNaJdgit")
+//    pull("api-partner.spotify.com",
+//      readString(path("cache/spotify/authorization")),
+//      readString(path("cache/spotify/client-token")),
+//      "37i9dQZF1F0sijgNaJdgit")
+    startOfBusiness()
+  }
+
+  def startOfBusiness(): Unit = {
+    val web = WebClient.builder()
+      .codecs(_.defaultCodecs().maxInMemorySize(1024 * 1024 * 1024))
+      .defaultHeader("authorization", readString(path("cache/spotify/authorization")))
+      .defaultHeader("client-token", readString(path("cache/spotify/client-token")))
+      .build()
+    val objectMapper = JsonMapper.builder()
+      .findAndAddModules()
+      .configure(FAIL_ON_UNKNOWN_PROPERTIES, false).build()
+    val uriBuilder = () => UriComponentsBuilder.newInstance()
+      .scheme("https")
+      .host("api-partner.spotify.com")
+      .port(443)
+
+    val a = LocalDiscCache.computationSource("spotify/plists.json", pullPlaylistCoordinates(web, objectMapper,
+      uriBuilder()).toPrettyString)
+
+    playlistCoordinatesToNice(objectMapper.readTree(a))
+      .to(Vector)
+      .filterNot(thing => Set("Hack Cambridge", "power metal", "Chopin: Essential Classics", "Liked from Radio") contains thing._1)
+      .map[Callable[NicePlaylist]] { case (name, id) => () =>
+        val c = LocalDiscCache.computationSource(s"spotify/pls/$name.json",
+          pullPlaylistContent(web, objectMapper, uriBuilder(), id).toPrettyString)
+        playlistStructureToNice(objectMapper.readTree(c))
+      }
+      .map(executor.submit(_))
+      .map(_.get())
+      .flatMap(Option(_))
+      .foreach { plst =>
+        writeString(path(s"spotify/pls/${plst.name}.nice.json"),
+          objectMapper.valueToTree[JsonNode](plst).toPrettyString)
+      }
   }
 
   private val objectMapper = JsonMapper.builder()

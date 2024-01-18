@@ -11,7 +11,7 @@ class NicePlaylistTest extends AnyFunSuiteLike {
       .findAndAddModules().build()
 
     val playlistIn = NicePlaylist
-      .empty("test playlist")
+      .empty("test playlist", "myself")
       .addTrack("test track 1", "test album")
       .addTrack("test track 2", "test album", "artist", "extra artist")
 
