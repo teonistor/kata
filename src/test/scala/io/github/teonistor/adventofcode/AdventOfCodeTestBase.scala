@@ -25,7 +25,7 @@ abstract class AdventOfCodeTestBase extends AnyFunSuite {
       .flatMap(cookie => Try(LocalDiscCache.webSource(
         sf("cache/%04d_%02d", solution.year, solution.day),
         sf("https://adventofcode.com/%d/day/%d/input", solution.year, solution.day),
-        ("session", cookie)))
+        ("session", cookie.strip())))
         .recover { e =>
           println(s"Could not fetch problem input because $e")
           cancel
