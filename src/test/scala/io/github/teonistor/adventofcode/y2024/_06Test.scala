@@ -3,7 +3,7 @@ package io.github.teonistor.adventofcode.y2024
 import io.github.teonistor.adventofcode.AdventOfCodeTestBase
 
 class _06Test extends AdventOfCodeTestBase {
-  autorun(_06, 41L, 6L,
+  autorun(_06, 41, 6,
     """....#.....
       |.........#
       |..........
